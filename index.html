@@ -1,0 +1,97 @@
+<!DOCTYPE html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b2545"><link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg"><link rel="apple-touch-icon" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><title>Potensi Pajak Daerah - BAPENDA Paser</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--navy:#0b2545;--gold:#e0b341;--bg:#f3f5f9;--ink:#16202e;--mut:#5d6b80;--line:#d5dbe6}
+*{box-sizing:border-box}body{margin:0;font:15px/1.45 system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--navy);color:#fff;padding:14px 16px 0;position:sticky;top:0;z-index:5}
+h1{font:700 18px Georgia,serif;margin:0 0 2px}header small{color:#b9c6dc}
+nav{display:flex;gap:4px;margin-top:10px}nav button{flex:1;padding:10px 4px;border:0;background:#17375f;color:#cfd9ea;font:600 14px inherit;border-radius:8px 8px 0 0}
+nav button.on{background:var(--bg);color:var(--navy)}
+main{padding:14px;max-width:900px;margin:auto}
+.tot{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
+.tot div{background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 10px}.tot b{display:block;font-size:15px}.tot span{color:var(--mut);font-size:12px}
+.tot .g{grid-column:1/-1;background:var(--navy);color:#fff}.tot .g span{color:#b9c6dc}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+label{font-size:12px;color:var(--mut);display:block}input,select,textarea{width:100%;padding:8px;border:1px solid var(--line);border-radius:6px;font:inherit;background:#fff}
+textarea{min-height:110px;font:13px monospace}
+.btn{padding:9px 14px;border:0;border-radius:7px;background:var(--navy);color:#fff;font:600 14px inherit;margin:8px 6px 0 0}.btn.o{background:var(--gold);color:var(--navy)}.btn.l{background:#fff;color:var(--navy);border:1px solid var(--navy)}
+table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{color:var(--mut);font-weight:600}td.r,th.r{text-align:right}
+.x{border:0;background:none;color:#b3261e;font-size:18px}.warn{background:#fff6dd;border:1px solid var(--gold);border-radius:8px;padding:9px 11px;font-size:13px;margin-bottom:12px}
+.sc{overflow-x:auto}.res{font-size:12px;color:var(--mut)}
+</style></head><body>
+<header><h1>Potensi pajak daerah</h1><small>BAPENDA Kabupaten Paser</small><button id="ins" class="btn o" style="display:none;position:absolute;right:12px;top:8px;margin:0" onclick="installApp()">Install aplikasi</button><nav id="nav"></nav></header>
+<main><div class="tot" id="tot"></div><div id="view"></div></main>
+<script>
+const KEC=['Batu Engau','Batu Sopang','Kuaro','Long Ikis','Long Kali','Muara Komam','Muara Samu','Pasir Belengkong','Tanah Grogot','Tanjung Harapan'];
+const N=x=>parseFloat(x)||0,R=x=>'Rp '+Math.round(x).toLocaleString('id-ID');
+const def=()=>({hotel:[],hib:[],rek:[],cfg:{tarif:20,jenis:'Billboard = 0\nBaliho = 0\nPapan nama = 0\nSpanduk = 0\nVideotron = 0\nNeon box = 0',lokasi:'Strategis tinggi = 0\nStrategis sedang = 0\nStrategis rendah = 0'}});
+let S;try{S=JSON.parse(localStorage.getItem('ppd'))||def()}catch(e){S=def()}
+const save=()=>localStorage.setItem('ppd',JSON.stringify(S));
+// field: 'kunci:Label:default'
+const BASE=['nama:Nama usaha','alamat:Alamat','kec:Kecamatan'];
+const parse=s=>s.map(x=>{const[k,l,d]=x.split(':');return{k,l,d:d??''}});
+const lst=t=>t.split('\n').map(l=>l.split('=')).filter(a=>a[0].trim()).map(a=>({n:a[0].trim(),v:N(a[1])}));
+const MOD={
+hotel:{nama:'Hotel',f:['kategori:Kategori (melati/bintang)','jenis:Jenis kamar','jml:Jumlah kamar:1','tarif:Tarif kamar (Rp):0','occ:Okupansi rata-rata (%):50','tp:Tarif pajak (%):10','hari:Hari setahun:365','mkn:F&B harga makan/orang:0','mnm:F&B harga minum/orang:0','fbh:F&B jumlah hari:0','fbar:F&B okupansi (%):0','rj:Ruang rapat jumlah:0','rt:Ruang rapat tarif:0','rh:Ruang rapat hari:0','rp:Paket makanan/orang:0','ro:Paket jumlah orang:0','rar:Ruang rapat okupansi (%):0','oth:Pendapatan lainnya (Rp):0'],
+ c:v=>{const l=v.tp/100,a=v.jml*v.tarif*v.occ/100*l*v.hari,b=(v.mkn+v.mnm)*v.fbh*v.fbar/100*l,c=(v.rj*v.rt*v.rh+v.rp*v.ro*v.rar/100)*l,d=v.oth*l;return{Kamar:a,'Food & beverage':b,'Ruang pertemuan':c,Lainnya:d,Total:a+b+c+d}}}};
+const HIB={
+karaoke:['Karaoke',['jk:Jumlah kamar/hall:1','tk:Tarif kamar (Rp):0','ar:Okupansi (%):30','je:Jam efektif/hari:8','pg:Pengunjung F&B/hari:0','hp:Harga rata-rata porsi:0','h:Hari setahun:365','tp:Tarif pajak (%):40'],v=>{const a=v.jk*v.tk*v.ar/100*v.je*v.h*v.tp/100,b=v.pg*v.hp*v.h*v.tp/100;return{Karaoke:a,'Restoran dalam karaoke':b,Total:a+b}}],
+bioskop:['Bioskop',['g:Jumlah theater:1','hh:Pertunjukan/hari:0','kk:Kapasitas kursi:0','ar:Okupansi (%):0','htm:HTM (Rp):0','tp:Tarif pajak (%):10','h:Hari:365'],v=>({Total:v.g*v.hh*v.kk*v.ar/100*v.htm*v.tp/100*v.h})],
+biliar:['Biliar',['m:Jumlah meja:1','t:Tarif/jam (Rp):0','ar:Okupansi (%):0','je:Jam efektif:8','tp:Tarif pajak (%):10','h:Hari:365'],v=>({Total:v.m*v.t*v.ar/100*v.je*v.tp/100*v.h})],
+pijat:['Panti pijat',['g:Jumlah room/bed:1','t:Tarif (Rp):0','ar:Okupansi (%):0','to:Turn over/hari:0','h:Hari:365','tp:Tarif pajak (%):10'],v=>({Total:v.g*v.t*v.ar/100*v.to*v.h*v.tp/100})],
+tangkas:['Ketangkasan mesin',['t:Tarif/mesin (Rp):0','m:Rata-rata mesin dipakai/hari:0','occ:Okupansi pengunjung (%):0','tp:Tarif pajak (%):10','h:Hari:365'],v=>({Total:v.t*v.m*v.occ/100*v.tp/100*v.h})],
+fitness:['Pusat kebugaran',['a:Jumlah anggota:0','b:Biaya keanggotaan/bulan (Rp):0','bl:Jumlah bulan:12','tp:Tarif pajak (%):10'],v=>({Total:v.a*v.b*v.bl*v.tp/100})],
+refleksi:['Refleksi',['jr:Jumlah room:0','tr:Tarif room (Rp):0','arr:Okupansi room (%):0','to1:Turn over room:0','h1:Hari room:365','jk:Jumlah kursi:0','tk:Tarif kursi (Rp):0','ark:Okupansi kursi (%):0','to2:Turn over kursi:0','h2:Hari kursi:365','tp:Tarif pajak (%):10'],v=>({Total:(v.jr*v.tr*v.arr/100*v.to1*v.h1+v.jk*v.tk*v.ark/100*v.to2*v.h2)*v.tp/100})]};
+// Reklame: NSR = NJOPR + NSPR (tanpa kelas jalan); pajak = NSR x tarif
+const REK=['nama:Nama/penyelenggara','alamat:Alamat','kec:Kecamatan','jenis:Jenis reklame','lokasi:Lokasi strategis','pjg:Panjang (m):0','lbr:Lebar (m):0','sisi:Jumlah sisi:1','jml:Jumlah unit:1','masa:Masa (bulan):12'];
+function calcRek(v){const J=lst(S.cfg.jenis).find(x=>x.n==v.jenis),L=lst(S.cfg.lokasi).find(x=>x.n==v.lokasi),luas=v.pjg*v.lbr,
+ njopr=luas*v.sisi*v.jml*(J?J.v:0),nspr=(L?L.v:0)*v.sisi*v.jml,nsr=(njopr+nspr)*v.masa/12;
+ return{'Luas (m2)':luas,NJOPR:njopr,NSPR:nspr,NSR:nsr,Total:nsr*N(S.cfg.tarif)/100}}
+let tab='hotel',hibJ='karaoke';
+const fmt=(k,x)=>k.startsWith('Luas')?x.toLocaleString('id-ID'):R(x);
+function inp(f,pre){const id='f_'+f.k;
+ if(f.k=='kec')return`<div><label>${f.l}</label><select id="${id}">${KEC.map(k=>`<option>${k}</option>`).join('')}</select></div>`;
+ if(f.k=='jenis'&&pre=='rek')return`<div><label>${f.l}</label><select id="${id}">${lst(S.cfg.jenis).map(x=>`<option>${x.n}</option>`).join('')}</select></div>`;
+ if(f.k=='lokasi')return`<div><label>${f.l}</label><select id="${id}">${lst(S.cfg.lokasi).map(x=>`<option>${x.n}</option>`).join('')}</select></div>`;
+ const t=f.d!==''?'number':'text';return`<div><label>${f.l}</label><input id="${id}" type="${t}" inputmode="${t=='number'?'decimal':'text'}" value="${f.d}"></div>`}
+function fieldsFor(m){return m=='hotel'?[...parse(BASE),...parse(MOD.hotel.f)]:m=='hib'?[...parse(BASE),...parse(HIB[hibJ][1])]:parse(REK)}
+function read(fs){const v={};fs.forEach(f=>{const e=document.getElementById('f_'+f.k);v[f.k]=f.d!==''?N(e.value):e.value});return v}
+function calc(m,e){return m=='hotel'?MOD.hotel.c(e.v):m=='hib'?HIB[e.j][2](e.v):calcRek(e.v)}
+function add(){const fs=fieldsFor(tab),v=read(fs);if(!v.nama.trim()){alert('Isi nama usaha dulu.');return}
+ const e={v};if(tab=='hib')e.j=hibJ;S[tab].push(e);save();render()}
+function del(i){if(confirm('Hapus data ini?')){S[tab].splice(i,1);save();render()}}
+function rows(m){return S[m].map((e,i)=>{const fs=fieldsFor2(m,e),o={No:i+1};if(m=='hib')o['Jenis hiburan']=HIB[e.j][0];fs.forEach(f=>o[f.l]=e.v[f.k]);Object.entries(calc(m,e)).forEach(([k,x])=>o[k=='Total'?'Potensi pajak (Rp)':k]=Math.round(x*100)/100);return o})}
+function fieldsFor2(m,e){return m=='hotel'?[...parse(BASE),...parse(MOD.hotel.f)]:m=='hib'?[...parse(BASE),...parse(HIB[e.j][1])]:parse(REK)}
+const tot=m=>S[m].reduce((s,e)=>s+calc(m,e).Total,0);
+const NM={hotel:'Hotel',hib:'Kesenian & hiburan',rek:'Reklame'};
+function file(n,ext){return`potensi-${n}-${new Date().toISOString().slice(0,10)}.${ext}`}
+function csv(m){const r=rows(m);if(!r.length)return alert('Belum ada data.');const h=[...new Set(r.flatMap(Object.keys))],q=x=>'"'+String(x??'').replace(/"/g,'""')+'"';
+ const t='\ufeff'+[h.map(q).join(','),...r.map(o=>h.map(k=>q(o[k])).join(','))].join('\r\n');
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv'}));a.download=file(m,'csv');a.click()}
+function xl(all){const wb=XLSX.utils.book_new(),ms=all?['hotel','hib','rek']:[tab];let any=0;
+ ms.forEach(m=>{const r=rows(m);if(r.length){any=1;XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(r),NM[m].slice(0,31))}});
+ if(all){XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Jenis pajak','Jumlah objek','Potensi pajak (Rp)'],...['hotel','hib','rek'].map(m=>[NM[m],S[m].length,Math.round(tot(m))]),['Total','',Math.round(tot('hotel')+tot('hib')+tot('rek'))]]),'Ringkasan');any=1}
+ if(!any)return alert('Belum ada data.');XLSX.writeFile(wb,file(all?'semua':tab,'xlsx'))}
+function saveCfg(){S.cfg={tarif:N(document.getElementById('c_t').value),jenis:document.getElementById('c_j').value,lokasi:document.getElementById('c_l').value};save();render()}
+function render(){
+ document.getElementById('nav').innerHTML=['hotel','hib','rek'].map(m=>`<button class="${m==tab?'on':''}" onclick="tab='${m}';render()">${NM[m]}</button>`).join('');
+ document.getElementById('tot').innerHTML=['hotel','hib','rek'].map(m=>`<div><span>${NM[m]} (${S[m].length})</span><b>${R(tot(m))}</b></div>`).join('')+`<div class="g"><span>Total potensi setahun</span><b>${R(tot('hotel')+tot('hib')+tot('rek'))}</b></div>`;
+ let h='';
+ if(tab=='rek'){const z=![...lst(S.cfg.jenis),...lst(S.cfg.lokasi)].some(x=>x.v>0);
+  h+=(z?`<div class="warn">Nilai NJOP dan nilai lokasi strategis masih 0. Isi dari lampiran Perbup Paser No. 41/2020 di bagian pengaturan di bawah, supaya potensi reklame terhitung.</div>`:'')+
+  `<details class="card"><summary><b>Pengaturan tarif reklame</b></summary><label>Tarif pajak (%)</label><input id="c_t" type="number" value="${S.cfg.tarif}"><label>NJOP per m2 tiap jenis (satu baris: nama = nilai)</label><textarea id="c_j">${S.cfg.jenis}</textarea><label>Nilai lokasi strategis per sisi (tanpa kelas jalan)</label><textarea id="c_l">${S.cfg.lokasi}</textarea><button class="btn o" onclick="saveCfg()">Simpan pengaturan</button><p class="res">NSR = (luas x sisi x unit x NJOP jenis + nilai lokasi x sisi x unit) x masa/12. Pajak = NSR x tarif.</p></details>`}
+ if(tab=='hib')h+=`<div class="card"><label>Jenis hiburan</label><select onchange="hibJ=this.value;render()">${Object.entries(HIB).map(([k,x])=>`<option value="${k}" ${k==hibJ?'selected':''}>${x[0]}</option>`).join('')}</select></div>`;
+ h+=`<div class="card"><b>Tambah data ${NM[tab].toLowerCase()}</b><div class="grid" style="margin-top:8px">${fieldsFor(tab).map(f=>inp(f,tab)).join('')}</div><button class="btn" onclick="add()">Simpan data</button></div>`;
+ const r=S[tab];h+=`<div class="card sc"><table><tr><th>Usaha</th><th class="r">Potensi/tahun</th><th></th></tr>${r.length?r.map((e,i)=>{const c=calc(tab,e);return`<tr><td><b>${e.v.nama}</b><div class="res">${e.v.kec}${tab=='hib'?' · '+HIB[e.j][0]:''}${tab=='rek'?' · '+e.v.jenis:''}</div></td><td class="r">${R(c.Total)}</td><td><button class="x" onclick="del(${i})">×</button></td></tr>`}).join(''):'<tr><td colspan="3" class="res">Belum ada data. Isi formulir di atas.</td></tr>'}</table></div>`;
+ h+=`<button class="btn o" onclick="xl(false)">Export Excel ${NM[tab]}</button><button class="btn l" onclick="csv(tab)">Export CSV</button><button class="btn" onclick="xl(true)">Export Excel semua pajak</button>`;
+ document.getElementById('view').innerHTML=h}
+let dp=null;const stand=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+if(!stand){if(ios)document.getElementById('ins').style.display='block';
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e;document.getElementById('ins').style.display='block'})}
+window.addEventListener('appinstalled',()=>{document.getElementById('ins').style.display='none'});
+async function installApp(){if(dp){dp.prompt();await dp.userChoice;dp=null;document.getElementById('ins').style.display='none'}
+ else alert(ios?'Di Safari: ketuk tombol Bagikan, lalu pilih "Tambah ke Layar Utama".':'Buka menu peramban (titik tiga), lalu pilih "Instal aplikasi" atau "Tambahkan ke layar utama". Di komputer, klik ikon instal di kolom alamat Chrome/Edge.')}
+render();if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script></body></html>
