@@ -2,7 +2,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{--navy:#0b2545;--gold:#e0b341;--bg:#f3f5f9;--ink:#16202e;--mut:#5d6b80;--line:#d5dbe6}
-*{box-sizing:border-box}body{margin:0;font:15px/1.45 system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+*{box-sizing:border-box}body{margin:0;padding-bottom:110px;font:15px/1.45 system-ui,sans-serif;background:var(--bg);color:var(--ink)}
 header{background:var(--navy);color:#fff;padding:14px 16px 0;position:sticky;top:0;z-index:5}
 h1{font:700 18px Georgia,serif;margin:0 0 2px}header small{color:#b9c6dc}
 nav{display:flex;gap:4px;margin-top:10px}nav button{flex:1;padding:10px 4px;border:0;background:#17375f;color:#cfd9ea;font:600 14px inherit;border-radius:8px 8px 0 0}
@@ -19,14 +19,17 @@ textarea{min-height:110px;font:13px monospace}
 table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{color:var(--mut);font-weight:600}td.r,th.r{text-align:right}
 .x{border:0;background:none;color:#b3261e;font-size:18px}.warn{background:#fff6dd;border:1px solid var(--gold);border-radius:8px;padding:9px 11px;font-size:13px;margin-bottom:12px}
 .sc{overflow-x:auto}.res{font-size:12px;color:var(--mut)}
+.live{position:fixed;left:0;right:0;bottom:0;background:var(--navy);color:#fff;padding:8px 14px;display:flex;flex-wrap:wrap;gap:2px 16px;z-index:6;border-top:3px solid var(--gold)}
+.lr span{color:#b9c6dc;font-size:12px;margin-right:6px}.lr.t{width:100%;font-size:17px}.lr.t b{color:var(--gold)}
+.det td{background:#f8f9fc;font-size:12px}.det .btn{padding:6px 10px;font-size:13px}tr.k{cursor:pointer}
 </style></head><body>
 <header><h1>Potensi pajak daerah</h1><small>BAPENDA Kabupaten Paser</small><button id="ins" class="btn o" style="display:none;position:absolute;right:12px;top:8px;margin:0" onclick="installApp()">Install aplikasi</button><nav id="nav"></nav></header>
-<main><div class="tot" id="tot"></div><div id="view"></div></main>
+<main><div class="tot" id="tot"></div><div id="view"></div></main><div class="live" id="live"></div>
 <script>
-const KEC=['Batu Engau','Batu Sopang','Kuaro','Long Ikis','Long Kali','Muara Komam','Muara Samu','Pasir Belengkong','Tanah Grogot','Tanjung Harapan'];
+const KEC=['Batu Engau','Batu Sopang','Kuaro','Long Ikis','Long Kali','Muara Komam','Muara Samu','Pasir Belengkong','Tanah Grogot','Tanjung Harapan','Belum diisi'];
 const N=x=>parseFloat(x)||0,R=x=>'Rp '+Math.round(x).toLocaleString('id-ID');
-const def=()=>({hotel:[],hib:[],rek:[],cfg:{tarif:20,jenis:'Billboard = 0\nBaliho = 0\nPapan nama = 0\nSpanduk = 0\nVideotron = 0\nNeon box = 0',lokasi:'Strategis tinggi = 0\nStrategis sedang = 0\nStrategis rendah = 0'}});
-let S;try{S=JSON.parse(localStorage.getItem('ppd'))||def()}catch(e){S=def()}
+const def=()=>({hotel:[],hib:[],rek:[],cfg:{auto:true,arH:'Tanah Grogot = 36\nKuaro = 70\nLong Ikis = 42\nLong Kali = 50\nBatu Sopang = 72\nLainnya = 42',arB:'Karaoke = 50\nBioskop = 50\nBiliar = 50\nPanti pijat = 50\nKetangkasan mesin = 50\nPusat kebugaran = 50\nRefleksi = 50',tarif:20,jenis:'Billboard = 0\nBaliho = 0\nPapan nama = 0\nSpanduk = 0\nVideotron = 0\nNeon box = 0',lokasi:'Strategis tinggi = 0\nStrategis sedang = 0\nStrategis rendah = 0'}});
+let S;try{S=JSON.parse(localStorage.getItem('ppd'))||def()}catch(e){S=def()}S.cfg={...def().cfg,...S.cfg};
 const save=()=>localStorage.setItem('ppd',JSON.stringify(S));
 // field: 'kunci:Label:default'
 const BASE=['nama:Nama usaha','alamat:Alamat','kec:Kecamatan'];
@@ -48,7 +51,7 @@ const REK=['nama:Nama/penyelenggara','alamat:Alamat','kec:Kecamatan','jenis:Jeni
 function calcRek(v){const J=lst(S.cfg.jenis).find(x=>x.n==v.jenis),L=lst(S.cfg.lokasi).find(x=>x.n==v.lokasi),luas=v.pjg*v.lbr,
  njopr=luas*v.sisi*v.jml*(J?J.v:0),nspr=(L?L.v:0)*v.sisi*v.jml,nsr=(njopr+nspr)*v.masa/12;
  return{'Luas (m2)':luas,NJOPR:njopr,NSPR:nspr,NSR:nsr,Total:nsr*N(S.cfg.tarif)/100}}
-let tab='hotel',hibJ='karaoke';
+let tab='hotel',hibJ='karaoke',editIdx=null,ex=new Set();const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmt=(k,x)=>k.startsWith('Luas')?x.toLocaleString('id-ID'):R(x);
 function inp(f,pre){const id='f_'+f.k;
  if(f.k=='kec')return`<div><label>${f.l}</label><select id="${id}">${KEC.map(k=>`<option>${k}</option>`).join('')}</select></div>`;
@@ -59,7 +62,7 @@ function fieldsFor(m){return m=='hotel'?[...parse(BASE),...parse(MOD.hotel.f)]:m
 function read(fs){const v={};fs.forEach(f=>{const e=document.getElementById('f_'+f.k);v[f.k]=f.d!==''?N(e.value):e.value});return v}
 function calc(m,e){return m=='hotel'?MOD.hotel.c(e.v):m=='hib'?HIB[e.j][2](e.v):calcRek(e.v)}
 function add(){const fs=fieldsFor(tab),v=read(fs);if(!v.nama.trim()){alert('Isi nama usaha dulu.');return}
- const e={v};if(tab=='hib')e.j=hibJ;S[tab].push(e);save();render()}
+ const e={v};if(tab=='hib')e.j=hibJ;if(editIdx!=null){S[tab][editIdx]=e;editIdx=null}else S[tab].push(e);save();render()}
 function del(i){if(confirm('Hapus data ini?')){S[tab].splice(i,1);save();render()}}
 function rows(m){return S[m].map((e,i)=>{const fs=fieldsFor2(m,e),o={No:i+1};if(m=='hib')o['Jenis hiburan']=HIB[e.j][0];fs.forEach(f=>o[f.l]=e.v[f.k]);Object.entries(calc(m,e)).forEach(([k,x])=>o[k=='Total'?'Potensi pajak (Rp)':k]=Math.round(x*100)/100);return o})}
 function fieldsFor2(m,e){return m=='hotel'?[...parse(BASE),...parse(MOD.hotel.f)]:m=='hib'?[...parse(BASE),...parse(HIB[e.j][1])]:parse(REK)}
@@ -73,19 +76,47 @@ function xl(all){const wb=XLSX.utils.book_new(),ms=all?['hotel','hib','rek']:[ta
  ms.forEach(m=>{const r=rows(m);if(r.length){any=1;XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(r),NM[m].slice(0,31))}});
  if(all){XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Jenis pajak','Jumlah objek','Potensi pajak (Rp)'],...['hotel','hib','rek'].map(m=>[NM[m],S[m].length,Math.round(tot(m))]),['Total','',Math.round(tot('hotel')+tot('hib')+tot('rek'))]]),'Ringkasan');any=1}
  if(!any)return alert('Belum ada data.');XLSX.writeFile(wb,file(all?'semua':tab,'xlsx'))}
-function saveCfg(){S.cfg={tarif:N(document.getElementById('c_t').value),jenis:document.getElementById('c_j').value,lokasi:document.getElementById('c_l').value};save();render()}
+function saveCfg(){const g=i=>document.getElementById(i);S.cfg.tarif=N(g('c_t').value);S.cfg.jenis=g('c_j').value;S.cfg.lokasi=g('c_l').value;save();render()}
+function saveAR(){const g=i=>document.getElementById(i);S.cfg.auto=g('a_on').checked;if(g('a_h'))S.cfg.arH=g('a_h').value;if(g('a_b'))S.cfg.arB=g('a_b').value;save();render()}
+const look=(t,n)=>{const l=lst(t),f=l.find(x=>x.n.toLowerCase()==String(n).toLowerCase())||l.find(x=>x.n.toLowerCase()=='lainnya');return f?f.v:null};
+function applyAR(){if(!S.cfg.auto||tab=='rek')return;const el=k=>document.getElementById('f_'+k),val=tab=='hotel'?look(S.cfg.arH,el('kec').value):look(S.cfg.arB,HIB[hibJ][0]);
+ if(val==null)return;['occ','fbar','rar','ar','arr','ark'].forEach(k=>{const e=el(k);if(e)e.value=val})}
+function chg(ev){if(ev.target.id=='f_kec'&&tab=='hotel')applyAR();live()}
+function live(){let c;try{c=calc(tab,{v:read(fieldsFor(tab)),j:hibJ})}catch(e){return}
+ document.getElementById('live').innerHTML=Object.entries(c).map(([k,x])=>k=='Total'?`<div class="lr t"><span>${tab=='rek'?'Pajak reklame per tahun':'Potensi pajak per tahun'}</span><b>${fmt(k,x)}</b></div>`:`<div class="lr"><span>${k}</span>${fmt(k,x)}</div>`).join('')}
+// ---- import ----
+const pc=x=>{x=N(x);return x<=1?x*100:x};
+function kecM(t){t=String(t).toLowerCase();if(/\btgt\b/.test(t))return'Tanah Grogot';return KEC.find(k=>t.includes(k.toLowerCase()))||'Belum diisi'}
+function impHotel(a){const kec=kecM(a[1]?.[0]);let nm='',al='',kt='',c=0;
+ for(let i=6;i<a.length;i++){const r=a[i];if(String(r[1]).trim()){nm=String(r[1]).trim();al=String(r[2]).trim()}if(String(r[6]).trim())kt=String(r[6]).trim();if(!(N(r[8])>0)||!nm)continue;
+  S.hotel.push({v:{nama:nm,alamat:al,kec,kategori:kt,jenis:String(r[7]).trim(),jml:N(r[8]),tarif:N(r[9]),occ:pc(r[10]),tp:r[11]===''?10:pc(r[11]),hari:N(r[12])||365,mkn:N(r[14]),mnm:N(r[15]),fbh:N(r[16]),fbar:pc(r[17]),rj:N(r[19]),rt:N(r[20]),rh:N(r[21]),rp:N(r[22]),ro:N(r[23]),rar:pc(r[24]),oth:N(r[26])}});c++}return c}
+function impKar(a){let c=0;for(let i=6;i<a.length;i++){const r=a[i];if(!String(r[1]).trim()||!(N(r[6])>0))continue;
+ S.hib.push({j:'karaoke',v:{nama:String(r[1]).trim(),alamat:String(r[2]).trim(),kec:kecM(r[2]),jk:N(r[6]),tk:N(r[7]),ar:pc(r[8]),je:N(r[9]),pg:N(r[10]),hp:N(r[11]),h:N(r[12])||365,tp:pc(r[13])||40}});c++}return c}
+function impOwn(sn,a){if(!a[0]||!a[0].includes('Nama usaha')||sn=='Ringkasan')return 0;const m=Object.keys(NM).find(k=>NM[k].slice(0,31)==sn)||tab;let c=0;
+ a.slice(1).forEach(r=>{const o={};a[0].forEach((h,i)=>o[h]=r[i]);if(!String(o['Nama usaha']).trim())return;let e={},fs;
+  if(m=='hib'){const j=Object.keys(HIB).find(k=>HIB[k][0]==o['Jenis hiburan']);if(!j)return;e.j=j;fs=[...parse(BASE),...parse(HIB[j][1])]}else fs=m=='hotel'?[...parse(BASE),...parse(MOD.hotel.f)]:parse(REK);
+  e.v={};fs.forEach(f=>e.v[f.k]=f.d!==''?N(o[f.l]):String(o[f.l]??''));S[m].push(e);c++});return c}
+function impSheet(sn,a){const t=String(a[0]?.[0]||'').toUpperCase();
+ if(t.includes('POTENSI PAJAK HOTEL'))return impHotel(a);if(t.includes('KARAOKE UMUM'))return impKar(a);return impOwn(sn,a)}
+async function imp(inp){const f=inp.files[0];if(!f)return;let n=0;try{const wb=XLSX.read(await f.arrayBuffer(),{type:'array'});
+ wb.SheetNames.forEach(s=>{n+=impSheet(s,XLSX.utils.sheet_to_json(wb.Sheets[s],{header:1,defval:''}))})}catch(e){alert('File tidak bisa dibaca.')}
+ inp.value='';save();render();alert(n?n+' baris data berhasil diimpor.':'Tidak ada data yang cocok. Pakai file export aplikasi ini, atau Excel Potensi Hotel / Karaoke Umum.')}
+function tg(i){ex.has(i)?ex.delete(i):ex.add(i);render()}
+function ubah(i){editIdx=i;if(tab=='hib')hibJ=S.hib[i].j;render();scrollTo(0,0)}
+function arCard(){return tab=='rek'?'':`<details class="card"><summary><b>Okupansi otomatis</b></summary><label><input type="checkbox" id="a_on" style="width:auto" ${S.cfg.auto?'checked':''}> Isi okupansi rate otomatis di formulir</label>${tab=='hotel'?`<label>Okupansi hotel per kecamatan (%), rata-rata dari Excel Potensi Hotel</label><textarea id="a_h">${S.cfg.arH}</textarea>`:`<label>Okupansi per jenis hiburan (%), karaoke dari Excel, lainnya angka awal</label><textarea id="a_b">${S.cfg.arB}</textarea>`}<button class="btn o" onclick="saveAR()">Simpan</button></details>`}
 function render(){
- document.getElementById('nav').innerHTML=['hotel','hib','rek'].map(m=>`<button class="${m==tab?'on':''}" onclick="tab='${m}';render()">${NM[m]}</button>`).join('');
+ document.getElementById('nav').innerHTML=['hotel','hib','rek'].map(m=>`<button class="${m==tab?'on':''}" onclick="tab='${m}';editIdx=null;ex.clear();render()">${NM[m]}</button>`).join('');
  document.getElementById('tot').innerHTML=['hotel','hib','rek'].map(m=>`<div><span>${NM[m]} (${S[m].length})</span><b>${R(tot(m))}</b></div>`).join('')+`<div class="g"><span>Total potensi setahun</span><b>${R(tot('hotel')+tot('hib')+tot('rek'))}</b></div>`;
  let h='';
  if(tab=='rek'){const z=![...lst(S.cfg.jenis),...lst(S.cfg.lokasi)].some(x=>x.v>0);
   h+=(z?`<div class="warn">Nilai NJOP dan nilai lokasi strategis masih 0. Isi dari lampiran Perbup Paser No. 41/2020 di bagian pengaturan di bawah, supaya potensi reklame terhitung.</div>`:'')+
   `<details class="card"><summary><b>Pengaturan tarif reklame</b></summary><label>Tarif pajak (%)</label><input id="c_t" type="number" value="${S.cfg.tarif}"><label>NJOP per m2 tiap jenis (satu baris: nama = nilai)</label><textarea id="c_j">${S.cfg.jenis}</textarea><label>Nilai lokasi strategis per sisi (tanpa kelas jalan)</label><textarea id="c_l">${S.cfg.lokasi}</textarea><button class="btn o" onclick="saveCfg()">Simpan pengaturan</button><p class="res">NSR = (luas x sisi x unit x NJOP jenis + nilai lokasi x sisi x unit) x masa/12. Pajak = NSR x tarif.</p></details>`}
- if(tab=='hib')h+=`<div class="card"><label>Jenis hiburan</label><select onchange="hibJ=this.value;render()">${Object.entries(HIB).map(([k,x])=>`<option value="${k}" ${k==hibJ?'selected':''}>${x[0]}</option>`).join('')}</select></div>`;
- h+=`<div class="card"><b>Tambah data ${NM[tab].toLowerCase()}</b><div class="grid" style="margin-top:8px">${fieldsFor(tab).map(f=>inp(f,tab)).join('')}</div><button class="btn" onclick="add()">Simpan data</button></div>`;
- const r=S[tab];h+=`<div class="card sc"><table><tr><th>Usaha</th><th class="r">Potensi/tahun</th><th></th></tr>${r.length?r.map((e,i)=>{const c=calc(tab,e);return`<tr><td><b>${e.v.nama}</b><div class="res">${e.v.kec}${tab=='hib'?' · '+HIB[e.j][0]:''}${tab=='rek'?' · '+e.v.jenis:''}</div></td><td class="r">${R(c.Total)}</td><td><button class="x" onclick="del(${i})">×</button></td></tr>`}).join(''):'<tr><td colspan="3" class="res">Belum ada data. Isi formulir di atas.</td></tr>'}</table></div>`;
- h+=`<button class="btn o" onclick="xl(false)">Export Excel ${NM[tab]}</button><button class="btn l" onclick="csv(tab)">Export CSV</button><button class="btn" onclick="xl(true)">Export Excel semua pajak</button>`;
- document.getElementById('view').innerHTML=h}
+ if(tab=='hib')h+=`<div class="card"><label>Jenis hiburan</label><select ${editIdx!=null?'disabled':''} onchange="hibJ=this.value;render()">${Object.entries(HIB).map(([k,x])=>`<option value="${k}" ${k==hibJ?'selected':''}>${x[0]}</option>`).join('')}</select></div>`;
+ h+=`<div class="card"><b>${editIdx!=null?'Ubah data':'Hitung dan tambah data'} ${NM[tab].toLowerCase()}</b><div class="grid" style="margin-top:8px" oninput="chg(event)" onchange="chg(event)">${fieldsFor(tab).map(f=>inp(f,tab)).join('')}</div><button class="btn" onclick="add()">Simpan data</button>${editIdx!=null?'<button class="btn l" onclick="editIdx=null;render()">Batal ubah</button>':''}</div>`;
+ const r=S[tab];h+=`<div class="card sc"><table><tr><th>Usaha (ketuk untuk detail)</th><th class="r">Potensi/tahun</th></tr>${r.length?r.map((e,i)=>{const c=calc(tab,e),o=ex.has(i);return`<tr class="k" onclick="tg(${i})"><td><b>${esc(e.v.nama)}</b><div class="res">${esc(e.v.kec)}${tab=='hib'?' · '+HIB[e.j][0]:''}${tab=='rek'?' · '+esc(e.v.jenis):''}</div></td><td class="r">${R(c.Total)}</td></tr>`+(o?`<tr class="det"><td colspan="2">${fieldsFor2(tab,e).map(f=>`${f.l}: <b>${esc(e.v[f.k])}</b>`).join(' · ')}<br><br>${Object.entries(c).map(([k,x])=>`${k}: <b>${fmt(k,x)}</b>`).join(' · ')}<br><button class="btn" onclick="event.stopPropagation();ubah(${i})">Ubah</button><button class="btn l" onclick="event.stopPropagation();del(${i})">Hapus</button></td></tr>`:'')}).join(''):'<tr><td colspan="2" class="res">Belum ada data. Isi formulir di atas atau import dari Excel.</td></tr>'}</table></div>`;
+ h+=`<button class="btn o" onclick="xl(false)">Export Excel ${NM[tab]}</button><button class="btn l" onclick="csv(tab)">Export CSV</button><button class="btn" onclick="xl(true)">Export Excel semua pajak</button><label class="btn l" style="display:inline-block">Import data<input type="file" accept=".xlsx,.xls,.csv" hidden onchange="imp(this)"></label>`+arCard();
+ document.getElementById('view').innerHTML=h;
+ if(editIdx!=null){const e=S[tab][editIdx];fieldsFor(tab).forEach(f=>{const el=document.getElementById('f_'+f.k);if(el)el.value=e.v[f.k]})}else applyAR();live()}
 let dp=null;const stand=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
 const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
 if(!stand){if(ios)document.getElementById('ins').style.display='block';
