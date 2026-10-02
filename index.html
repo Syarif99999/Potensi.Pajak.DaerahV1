@@ -1,29 +1,29 @@
-<!DOCTYPE html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b2545"><link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg"><link rel="apple-touch-icon" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><title>Potensi Pajak Daerah - BAPENDA Paser</title>
+<!DOCTYPE html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#073b6b"><link rel="manifest" href="manifest.json"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><title>Potensi Pajak Daerah - BAPENDA Paser</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-:root{--navy:#0b2545;--gold:#e0b341;--bg:#f3f5f9;--ink:#16202e;--mut:#5d6b80;--line:#d5dbe6}
-*{box-sizing:border-box}body{margin:0;padding-bottom:110px;font:15px/1.45 system-ui,sans-serif;background:var(--bg);color:var(--ink)}
-header{background:var(--navy);color:#fff;padding:14px 16px 0;position:sticky;top:0;z-index:5}
-h1{font:700 18px Georgia,serif;margin:0 0 2px}header small{color:#b9c6dc}
-nav{display:flex;gap:4px;margin-top:10px}nav button{flex:1;padding:10px 4px;border:0;background:#17375f;color:#cfd9ea;font:600 14px inherit;border-radius:8px 8px 0 0}
-nav button.on{background:var(--bg);color:var(--navy)}
+:root{--navy:#073b6b;--blue:#0a6bb5;--gold:#f2c200;--bg:#f2f6fa;--ink:#16202e;--mut:#5d6b80;--line:#d5dde8}
+*{box-sizing:border-box}body{margin:0;padding-bottom:96px;font:15px/1.45 system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--navy);color:#fff;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 0;position:sticky;top:0;z-index:5}
+.br{display:flex;align-items:center;gap:10px}.br img{height:46px;width:auto}h1{font:700 17px/1.2 Georgia,serif;margin:0}header small{color:#b9cfe6}
+nav{display:flex;gap:4px;margin-top:10px}nav button{flex:1;padding:10px 4px;border:0;background:#0d4d8a;color:#cfe0f2;font:600 14px inherit;border-radius:8px 8px 0 0}nav button.on{background:var(--bg);color:var(--navy)}
 main{padding:14px;max-width:900px;margin:auto}
-.tot{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
-.tot div{background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 10px}.tot b{display:block;font-size:15px}.tot span{color:var(--mut);font-size:12px}
-.tot .g{grid-column:1/-1;background:var(--navy);color:#fff}.tot .g span{color:#b9c6dc}
+.tot{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;padding:0 2px}.tot span{color:var(--mut);font-size:13px}.tot b{font-size:18px;color:var(--navy)}
 .card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:12px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
-label{font-size:12px;color:var(--mut);display:block}input,select,textarea{width:100%;padding:8px;border:1px solid var(--line);border-radius:6px;font:inherit;background:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+label{font-size:12px;color:var(--mut);display:block;margin-bottom:2px}.au{color:var(--blue)}
+input,select,textarea{width:100%;padding:9px;border:1px solid var(--line);border-radius:6px;font:inherit;background:#fff}input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
 textarea{min-height:110px;font:13px monospace}
-.btn{padding:9px 14px;border:0;border-radius:7px;background:var(--navy);color:#fff;font:600 14px inherit;margin:8px 6px 0 0}.btn.o{background:var(--gold);color:var(--navy)}.btn.l{background:#fff;color:var(--navy);border:1px solid var(--navy)}
-table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{color:var(--mut);font-weight:600}td.r,th.r{text-align:right}
-.x{border:0;background:none;color:#b3261e;font-size:18px}.warn{background:#fff6dd;border:1px solid var(--gold);border-radius:8px;padding:9px 11px;font-size:13px;margin-bottom:12px}
+.btn{padding:10px 14px;border:0;border-radius:7px;background:var(--navy);color:#fff;font:600 14px inherit;margin:10px 6px 0 0}.btn.o{background:var(--gold);color:var(--navy)}.btn.l{background:#fff;color:var(--navy);border:1px solid var(--navy)}
+details summary{cursor:pointer;color:var(--blue);font-weight:600;font-size:14px}details.ex{margin-top:12px}details.ex .grid{margin-top:10px}
+table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{color:var(--mut);font-weight:600}td.r,th.r{text-align:right}
+.warn{background:#fff6dd;border:1px solid var(--gold);border-radius:8px;padding:9px 11px;font-size:13px;margin-bottom:12px}
 .sc{overflow-x:auto}.res{font-size:12px;color:var(--mut)}
-.live{position:fixed;left:0;right:0;bottom:0;background:var(--navy);color:#fff;padding:8px 14px;display:flex;flex-wrap:wrap;gap:2px 16px;z-index:6;border-top:3px solid var(--gold)}
-.lr span{color:#b9c6dc;font-size:12px;margin-right:6px}.lr.t{width:100%;font-size:17px}.lr.t b{color:var(--gold)}
-.det td{background:#f8f9fc;font-size:12px}.det .btn{padding:6px 10px;font-size:13px}tr.k{cursor:pointer}
+.live{position:fixed;left:0;right:0;bottom:0;background:var(--navy);color:#fff;padding:8px 14px calc(8px + env(safe-area-inset-bottom,0px));z-index:6;border-top:3px solid var(--gold)}
+.live .t{display:flex;justify-content:space-between;align-items:baseline;font-size:17px}.live .t span{font-size:13px;color:#b9cfe6}.live .t b{color:var(--gold)}.live .d{font-size:12px;color:#b9cfe6;display:flex;flex-wrap:wrap;gap:0 14px}
+.det td{background:#f8fafc;font-size:12px}.det .btn{padding:6px 10px;font-size:13px}tr.k{cursor:pointer}
+@media(prefers-reduced-motion:no-preference){details[open]>.grid{animation:o .15s}@keyframes o{from{opacity:0}}}
 </style></head><body>
-<header><h1>Potensi pajak daerah</h1><small>BAPENDA Kabupaten Paser</small><button id="ins" class="btn o" style="display:none;position:absolute;right:12px;top:8px;margin:0" onclick="installApp()">Install aplikasi</button><nav id="nav"></nav></header>
+<header><div class="br"><img src="logo.png" alt="Lambang Kabupaten Paser"><div><h1>Potensi Pajak Daerah</h1><small>BAPENDA Kabupaten Paser</small></div><button id="ins" class="btn o" style="display:none;margin:0 0 0 auto" onclick="installApp()">Install</button></div><nav id="nav"></nav></header>
 <main><div class="tot" id="tot"></div><div id="view"></div></main><div class="live" id="live"></div>
 <script>
 const KEC=['Batu Engau','Batu Sopang','Kuaro','Long Ikis','Long Kali','Muara Komam','Muara Samu','Pasir Belengkong','Tanah Grogot','Tanjung Harapan','Belum diisi'];
@@ -31,41 +31,40 @@ const N=x=>parseFloat(x)||0,R=x=>'Rp '+Math.round(x).toLocaleString('id-ID');
 const def=()=>({hotel:[],hib:[],rek:[],cfg:{auto:true,arH:'Tanah Grogot = 36\nKuaro = 70\nLong Ikis = 42\nLong Kali = 50\nBatu Sopang = 72\nLainnya = 42',arB:'Karaoke = 50\nBioskop = 50\nBiliar = 50\nPanti pijat = 50\nKetangkasan mesin = 50\nPusat kebugaran = 50\nRefleksi = 50',tarif:20,jenis:'Billboard = 0\nBaliho = 0\nPapan nama = 0\nSpanduk = 0\nVideotron = 0\nNeon box = 0',lokasi:'Strategis tinggi = 0\nStrategis sedang = 0\nStrategis rendah = 0'}});
 let S;try{S=JSON.parse(localStorage.getItem('ppd'))||def()}catch(e){S=def()}S.cfg={...def().cfg,...S.cfg};
 const save=()=>localStorage.setItem('ppd',JSON.stringify(S));
-// field: 'kunci:Label:default'
-const BASE=['nama:Nama usaha','alamat:Alamat','kec:Kecamatan'];
-const parse=s=>s.map(x=>{const[k,l,d]=x.split(':');return{k,l,d:d??''}});
+// field 'kunci:Label:default:x' ; x = rincian tambahan (disembunyikan). default kosong = teks
+const BASE=['nama:Nama usaha','kec:Kecamatan','alamat:Alamat::x'];
+const parse=s=>s.map(x=>{const[k,l,d,x2]=x.split(':');return{k,l,d:d??'',x:x2=='x'}});
 const lst=t=>t.split('\n').map(l=>l.split('=')).filter(a=>a[0].trim()).map(a=>({n:a[0].trim(),v:N(a[1])}));
-const MOD={
-hotel:{nama:'Hotel',f:['kategori:Kategori (melati/bintang)','jenis:Jenis kamar','jml:Jumlah kamar:1','tarif:Tarif kamar (Rp):0','occ:Okupansi rata-rata (%):50','tp:Tarif pajak (%):10','hari:Hari setahun:365','mkn:F&B harga makan/orang:0','mnm:F&B harga minum/orang:0','fbh:F&B jumlah hari:0','fbar:F&B okupansi (%):0','rj:Ruang rapat jumlah:0','rt:Ruang rapat tarif:0','rh:Ruang rapat hari:0','rp:Paket makanan/orang:0','ro:Paket jumlah orang:0','rar:Ruang rapat okupansi (%):0','oth:Pendapatan lainnya (Rp):0'],
+const AK=['occ','fbar','rar','ar','arr','ark'];
+const MOD={hotel:{nama:'Hotel',f:['jml:Jumlah kamar:1','tarif:Tarif kamar per malam (Rp):0','occ:Okupansi (%):50','kategori:Kategori (melati/bintang)::x','jenis:Jenis kamar::x','tp:Tarif pajak (%):10:x','hari:Hari setahun:365:x','mkn:F&B harga makan/orang:0:x','mnm:F&B harga minum/orang:0:x','fbh:F&B jumlah hari:0:x','fbar:F&B okupansi (%):0:x','rj:Ruang rapat jumlah:0:x','rt:Ruang rapat tarif:0:x','rh:Ruang rapat hari:0:x','rp:Paket makanan/orang:0:x','ro:Paket jumlah orang:0:x','rar:Ruang rapat okupansi (%):0:x','oth:Pendapatan lainnya (Rp):0:x'],
  c:v=>{const l=v.tp/100,a=v.jml*v.tarif*v.occ/100*l*v.hari,b=(v.mkn+v.mnm)*v.fbh*v.fbar/100*l,c=(v.rj*v.rt*v.rh+v.rp*v.ro*v.rar/100)*l,d=v.oth*l;return{Kamar:a,'Food & beverage':b,'Ruang pertemuan':c,Lainnya:d,Total:a+b+c+d}}}};
 const HIB={
-karaoke:['Karaoke',['jk:Jumlah kamar/hall:1','tk:Tarif kamar (Rp):0','ar:Okupansi (%):30','je:Jam efektif/hari:8','pg:Pengunjung F&B/hari:0','hp:Harga rata-rata porsi:0','h:Hari setahun:365','tp:Tarif pajak (%):40'],v=>{const a=v.jk*v.tk*v.ar/100*v.je*v.h*v.tp/100,b=v.pg*v.hp*v.h*v.tp/100;return{Karaoke:a,'Restoran dalam karaoke':b,Total:a+b}}],
-bioskop:['Bioskop',['g:Jumlah theater:1','hh:Pertunjukan/hari:0','kk:Kapasitas kursi:0','ar:Okupansi (%):0','htm:HTM (Rp):0','tp:Tarif pajak (%):10','h:Hari:365'],v=>({Total:v.g*v.hh*v.kk*v.ar/100*v.htm*v.tp/100*v.h})],
-biliar:['Biliar',['m:Jumlah meja:1','t:Tarif/jam (Rp):0','ar:Okupansi (%):0','je:Jam efektif:8','tp:Tarif pajak (%):10','h:Hari:365'],v=>({Total:v.m*v.t*v.ar/100*v.je*v.tp/100*v.h})],
-pijat:['Panti pijat',['g:Jumlah room/bed:1','t:Tarif (Rp):0','ar:Okupansi (%):0','to:Turn over/hari:0','h:Hari:365','tp:Tarif pajak (%):10'],v=>({Total:v.g*v.t*v.ar/100*v.to*v.h*v.tp/100})],
-tangkas:['Ketangkasan mesin',['t:Tarif/mesin (Rp):0','m:Rata-rata mesin dipakai/hari:0','occ:Okupansi pengunjung (%):0','tp:Tarif pajak (%):10','h:Hari:365'],v=>({Total:v.t*v.m*v.occ/100*v.tp/100*v.h})],
-fitness:['Pusat kebugaran',['a:Jumlah anggota:0','b:Biaya keanggotaan/bulan (Rp):0','bl:Jumlah bulan:12','tp:Tarif pajak (%):10'],v=>({Total:v.a*v.b*v.bl*v.tp/100})],
-refleksi:['Refleksi',['jr:Jumlah room:0','tr:Tarif room (Rp):0','arr:Okupansi room (%):0','to1:Turn over room:0','h1:Hari room:365','jk:Jumlah kursi:0','tk:Tarif kursi (Rp):0','ark:Okupansi kursi (%):0','to2:Turn over kursi:0','h2:Hari kursi:365','tp:Tarif pajak (%):10'],v=>({Total:(v.jr*v.tr*v.arr/100*v.to1*v.h1+v.jk*v.tk*v.ark/100*v.to2*v.h2)*v.tp/100})]};
+karaoke:['Karaoke',['jk:Jumlah kamar/hall:1','tk:Tarif kamar per jam (Rp):0','ar:Okupansi (%):30','je:Jam efektif/hari:8:x','pg:Pengunjung F&B/hari:0:x','hp:Harga rata-rata porsi:0:x','h:Hari setahun:365:x','tp:Tarif pajak (%):40:x'],v=>{const a=v.jk*v.tk*v.ar/100*v.je*v.h*v.tp/100,b=v.pg*v.hp*v.h*v.tp/100;return{Karaoke:a,'Restoran dalam karaoke':b,Total:a+b}}],
+bioskop:['Bioskop',['hh:Pertunjukan/hari:0','kk:Kapasitas kursi:0','htm:HTM (Rp):0','ar:Okupansi (%):0','g:Jumlah theater:1:x','tp:Tarif pajak (%):10:x','h:Hari:365:x'],v=>({Total:v.g*v.hh*v.kk*v.ar/100*v.htm*v.tp/100*v.h})],
+biliar:['Biliar',['m:Jumlah meja:1','t:Tarif/jam (Rp):0','ar:Okupansi (%):0','je:Jam efektif:8:x','tp:Tarif pajak (%):10:x','h:Hari:365:x'],v=>({Total:v.m*v.t*v.ar/100*v.je*v.tp/100*v.h})],
+pijat:['Panti pijat',['g:Jumlah room/bed:1','t:Tarif (Rp):0','to:Turn over/hari:0','ar:Okupansi (%):0','h:Hari:365:x','tp:Tarif pajak (%):10:x'],v=>({Total:v.g*v.t*v.ar/100*v.to*v.h*v.tp/100})],
+tangkas:['Ketangkasan mesin',['t:Tarif/mesin (Rp):0','m:Rata-rata mesin dipakai/hari:0','occ:Okupansi pengunjung (%):0','tp:Tarif pajak (%):10:x','h:Hari:365:x'],v=>({Total:v.t*v.m*v.occ/100*v.tp/100*v.h})],
+fitness:['Pusat kebugaran',['a:Jumlah anggota:0','b:Biaya keanggotaan/bulan (Rp):0','bl:Jumlah bulan:12:x','tp:Tarif pajak (%):10:x'],v=>({Total:v.a*v.b*v.bl*v.tp/100})],
+refleksi:['Refleksi',['jr:Jumlah room:0','tr:Tarif room (Rp):0','arr:Okupansi room (%):0','to1:Turn over room:0','jk:Jumlah kursi:0:x','tk:Tarif kursi (Rp):0:x','ark:Okupansi kursi (%):0:x','to2:Turn over kursi:0:x','h1:Hari room:365:x','h2:Hari kursi:365:x','tp:Tarif pajak (%):10:x'],v=>({Total:(v.jr*v.tr*v.arr/100*v.to1*v.h1+v.jk*v.tk*v.ark/100*v.to2*v.h2)*v.tp/100})]};
 // Reklame: NSR = NJOPR + NSPR (tanpa kelas jalan); pajak = NSR x tarif
-const REK=['nama:Nama/penyelenggara','alamat:Alamat','kec:Kecamatan','jenis:Jenis reklame','lokasi:Lokasi strategis','pjg:Panjang (m):0','lbr:Lebar (m):0','sisi:Jumlah sisi:1','jml:Jumlah unit:1','masa:Masa (bulan):12'];
+const REK=['nama:Nama/penyelenggara','jenis:Jenis reklame','lokasi:Lokasi strategis','pjg:Panjang (m):0','lbr:Lebar (m):0','sisi:Jumlah sisi:1','masa:Masa (bulan):12','jml:Jumlah unit:1:x','kec:Kecamatan::x','alamat:Alamat::x'];
 function calcRek(v){const J=lst(S.cfg.jenis).find(x=>x.n==v.jenis),L=lst(S.cfg.lokasi).find(x=>x.n==v.lokasi),luas=v.pjg*v.lbr,
  njopr=luas*v.sisi*v.jml*(J?J.v:0),nspr=(L?L.v:0)*v.sisi*v.jml,nsr=(njopr+nspr)*v.masa/12;
  return{'Luas (m2)':luas,NJOPR:njopr,NSPR:nspr,NSR:nsr,Total:nsr*N(S.cfg.tarif)/100}}
 let tab='hotel',hibJ='karaoke',editIdx=null,ex=new Set();const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmt=(k,x)=>k.startsWith('Luas')?x.toLocaleString('id-ID'):R(x);
-function inp(f,pre){const id='f_'+f.k;
- if(f.k=='kec')return`<div><label>${f.l}</label><select id="${id}">${KEC.map(k=>`<option>${k}</option>`).join('')}</select></div>`;
- if(f.k=='jenis'&&pre=='rek')return`<div><label>${f.l}</label><select id="${id}">${lst(S.cfg.jenis).map(x=>`<option>${x.n}</option>`).join('')}</select></div>`;
- if(f.k=='lokasi')return`<div><label>${f.l}</label><select id="${id}">${lst(S.cfg.lokasi).map(x=>`<option>${x.n}</option>`).join('')}</select></div>`;
- const t=f.d!==''?'number':'text';return`<div><label>${f.l}</label><input id="${id}" type="${t}" inputmode="${t=='number'?'decimal':'text'}" value="${f.d}"></div>`}
-function fieldsFor(m){return m=='hotel'?[...parse(BASE),...parse(MOD.hotel.f)]:m=='hib'?[...parse(BASE),...parse(HIB[hibJ][1])]:parse(REK)}
+function inp(f,pre){const id='f_'+f.k,L=f.l+(AK.includes(f.k)?' <span class="au">· otomatis</span>':'');
+ const sel=a=>`<div><label>${L}</label><select id="${id}">${a.map(k=>`<option>${k}</option>`).join('')}</select></div>`;
+ if(f.k=='kec')return sel(KEC);if(f.k=='jenis'&&pre=='rek')return sel(lst(S.cfg.jenis).map(x=>x.n));if(f.k=='lokasi')return sel(lst(S.cfg.lokasi).map(x=>x.n));
+ const t=f.d!==''?'number':'text';return`<div><label>${L}</label><input id="${id}" type="${t}" inputmode="${t=='number'?'decimal':'text'}" value="${f.d}"></div>`}
+const FS=(m,j)=>m=='hotel'?[...parse(BASE),...parse(MOD.hotel.f)]:m=='hib'?[...parse(BASE),...parse(HIB[j][1])]:parse(REK);
+const fieldsFor=m=>FS(m,hibJ),fieldsFor2=(m,e)=>FS(m,e.j);
 function read(fs){const v={};fs.forEach(f=>{const e=document.getElementById('f_'+f.k);v[f.k]=f.d!==''?N(e.value):e.value});return v}
 function calc(m,e){return m=='hotel'?MOD.hotel.c(e.v):m=='hib'?HIB[e.j][2](e.v):calcRek(e.v)}
 function add(){const fs=fieldsFor(tab),v=read(fs);if(!v.nama.trim()){alert('Isi nama usaha dulu.');return}
- const e={v};if(tab=='hib')e.j=hibJ;if(editIdx!=null){S[tab][editIdx]=e;editIdx=null}else S[tab].push(e);save();render()}
+ const e={v};if(tab=='hib')e.j=hibJ;if(editIdx!=null){S[tab][editIdx]=e;editIdx=null}else S[tab].push(e);save();render();scrollTo(0,0)}
 function del(i){if(confirm('Hapus data ini?')){S[tab].splice(i,1);save();render()}}
 function rows(m){return S[m].map((e,i)=>{const fs=fieldsFor2(m,e),o={No:i+1};if(m=='hib')o['Jenis hiburan']=HIB[e.j][0];fs.forEach(f=>o[f.l]=e.v[f.k]);Object.entries(calc(m,e)).forEach(([k,x])=>o[k=='Total'?'Potensi pajak (Rp)':k]=Math.round(x*100)/100);return o})}
-function fieldsFor2(m,e){return m=='hotel'?[...parse(BASE),...parse(MOD.hotel.f)]:m=='hib'?[...parse(BASE),...parse(HIB[e.j][1])]:parse(REK)}
 const tot=m=>S[m].reduce((s,e)=>s+calc(m,e).Total,0);
 const NM={hotel:'Hotel',hib:'Kesenian & hiburan',rek:'Reklame'};
 function file(n,ext){return`potensi-${n}-${new Date().toISOString().slice(0,10)}.${ext}`}
@@ -78,12 +77,17 @@ function xl(all){const wb=XLSX.utils.book_new(),ms=all?['hotel','hib','rek']:[ta
  if(!any)return alert('Belum ada data.');XLSX.writeFile(wb,file(all?'semua':tab,'xlsx'))}
 function saveCfg(){const g=i=>document.getElementById(i);S.cfg.tarif=N(g('c_t').value);S.cfg.jenis=g('c_j').value;S.cfg.lokasi=g('c_l').value;save();render()}
 function saveAR(){const g=i=>document.getElementById(i);S.cfg.auto=g('a_on').checked;if(g('a_h'))S.cfg.arH=g('a_h').value;if(g('a_b'))S.cfg.arB=g('a_b').value;save();render()}
+// ---- okupansi otomatis: rata-rata data tersimpan (kecamatan / jenis yang sama), kalau belum ada pakai tabel awal ----
 const look=(t,n)=>{const l=lst(t),f=l.find(x=>x.n.toLowerCase()==String(n).toLowerCase())||l.find(x=>x.n.toLowerCase()=='lainnya');return f?f.v:null};
-function applyAR(){if(!S.cfg.auto||tab=='rek')return;const el=k=>document.getElementById('f_'+k),val=tab=='hotel'?look(S.cfg.arH,el('kec').value):look(S.cfg.arB,HIB[hibJ][0]);
- if(val==null)return;['occ','fbar','rar','ar','arr','ark'].forEach(k=>{const e=el(k);if(e)e.value=val})}
-function chg(ev){if(ev.target.id=='f_kec'&&tab=='hotel')applyAR();live()}
+function autoVal(){const el=k=>document.getElementById('f_'+k);let a;
+ if(tab=='hotel'){const kc=el('kec').value;a=S.hotel.filter(e=>e.v.kec==kc&&e.v.occ>0).map(e=>e.v.occ);if(!a.length)return look(S.cfg.arH,kc)}
+ else{a=S.hib.filter(e=>e.j==hibJ).map(e=>e.v.ar??e.v.occ??e.v.arr).filter(x=>x>0);if(!a.length)return look(S.cfg.arB,HIB[hibJ][0])}
+ return Math.round(a.reduce((s,x)=>s+x,0)/a.length*10)/10}
+function applyAR(){if(!S.cfg.auto||tab=='rek')return;const v=autoVal();if(v==null)return;AK.forEach(k=>{const e=document.getElementById('f_'+k);if(e&&!e.dataset.man)e.value=v})}
+function chg(ev){const t=ev.target;if(AK.includes(t.id.slice(2)))t.dataset.man=1;if(t.id=='f_kec'&&tab=='hotel'){AK.forEach(k=>{const e=document.getElementById('f_'+k);if(e)delete e.dataset.man});applyAR()}live()}
 function live(){let c;try{c=calc(tab,{v:read(fieldsFor(tab)),j:hibJ})}catch(e){return}
- document.getElementById('live').innerHTML=Object.entries(c).map(([k,x])=>k=='Total'?`<div class="lr t"><span>${tab=='rek'?'Pajak reklame per tahun':'Potensi pajak per tahun'}</span><b>${fmt(k,x)}</b></div>`:`<div class="lr"><span>${k}</span>${fmt(k,x)}</div>`).join('')}
+ const d=Object.entries(c).filter(([k,x])=>k!='Total'&&Object.keys(c).length>2).map(([k,x])=>`<span>${k}: ${fmt(k,x)}</span>`).join('');
+ document.getElementById('live').innerHTML=`<div class="t"><span>${tab=='rek'?'Pajak reklame per tahun':'Potensi pajak per tahun'}</span><b>${fmt('Total',c.Total)}</b></div>${d?`<div class="d">${d}</div>`:''}`}
 // ---- import ----
 const pc=x=>{x=N(x);return x<=1?x*100:x};
 function kecM(t){t=String(t).toLowerCase();if(/\btgt\b/.test(t))return'Tanah Grogot';return KEC.find(k=>t.includes(k.toLowerCase()))||'Belum diisi'}
@@ -93,30 +97,42 @@ function impHotel(a){const kec=kecM(a[1]?.[0]);let nm='',al='',kt='',c=0;
 function impKar(a){let c=0;for(let i=6;i<a.length;i++){const r=a[i];if(!String(r[1]).trim()||!(N(r[6])>0))continue;
  S.hib.push({j:'karaoke',v:{nama:String(r[1]).trim(),alamat:String(r[2]).trim(),kec:kecM(r[2]),jk:N(r[6]),tk:N(r[7]),ar:pc(r[8]),je:N(r[9]),pg:N(r[10]),hp:N(r[11]),h:N(r[12])||365,tp:pc(r[13])||40}});c++}return c}
 function impOwn(sn,a){if(!a[0]||!a[0].includes('Nama usaha')||sn=='Ringkasan')return 0;const m=Object.keys(NM).find(k=>NM[k].slice(0,31)==sn)||tab;let c=0;
- a.slice(1).forEach(r=>{const o={};a[0].forEach((h,i)=>o[h]=r[i]);if(!String(o['Nama usaha']).trim())return;let e={},fs;
-  if(m=='hib'){const j=Object.keys(HIB).find(k=>HIB[k][0]==o['Jenis hiburan']);if(!j)return;e.j=j;fs=[...parse(BASE),...parse(HIB[j][1])]}else fs=m=='hotel'?[...parse(BASE),...parse(MOD.hotel.f)]:parse(REK);
+ a.slice(1).forEach(r=>{const o={};a[0].forEach((h,i)=>o[h]=r[i]);if(!String(o['Nama usaha']??o['Nama/penyelenggara']??'').trim())return;let e={},fs;
+  if(m=='hib'){const j=Object.keys(HIB).find(k=>HIB[k][0]==o['Jenis hiburan']);if(!j)return;e.j=j;fs=FS('hib',j)}else fs=FS(m);
   e.v={};fs.forEach(f=>e.v[f.k]=f.d!==''?N(o[f.l]):String(o[f.l]??''));S[m].push(e);c++});return c}
+const GH={nama:/nama/i,alamat:/alamat/i,kec:/kecamatan|kec\./i,jml:/jumlah\s*kamar|jml.*kamar/i,tarif:/(tarif|harga).*kamar/i,occ:/okupansi|hunian/i};
+function impGen(a){let hi=-1,mp;
+ for(let i=0;i<Math.min(a.length,20)&&hi<0;i++){const m={};a[i].forEach((c,j)=>{const t=String(c);for(const k in GH)if(m[k]==null&&GH[k].test(t)&&!(k=='nama'&&/pemilik|npwpd|kode|petugas/i.test(t)))m[k]=j});if(m.nama!=null&&(m.alamat!=null||m.kec!=null)){hi=i;mp=m}}
+ if(hi<0)return 0;let c=0;
+ a.slice(hi+1).forEach(r=>{const nm=String(r[mp.nama]??'').trim();if(!nm)return;const v={};
+  FS(tab,hibJ).forEach(x=>v[x.k]=x.d!==''?N(x.d):'');
+  v.nama=nm;v.alamat=mp.alamat!=null?String(r[mp.alamat]).trim():'';v.kec=kecM(mp.kec!=null?r[mp.kec]:v.alamat);
+  if(tab=='hotel'){if(mp.jml!=null&&N(r[mp.jml])>0)v.jml=N(r[mp.jml]);if(mp.tarif!=null)v.tarif=N(r[mp.tarif]);if(mp.occ!=null&&N(r[mp.occ])>0)v.occ=pc(r[mp.occ])}
+  const e={v};if(tab=='hib')e.j=hibJ;S[tab].push(e);c++});return c}
 function impSheet(sn,a){const t=String(a[0]?.[0]||'').toUpperCase();
- if(t.includes('POTENSI PAJAK HOTEL'))return impHotel(a);if(t.includes('KARAOKE UMUM'))return impKar(a);return impOwn(sn,a)}
+ if(t.includes('POTENSI PAJAK HOTEL'))return impHotel(a);if(t.includes('KARAOKE UMUM'))return impKar(a);return impOwn(sn,a)||impGen(a)}
 async function imp(inp){const f=inp.files[0];if(!f)return;let n=0;try{const wb=XLSX.read(await f.arrayBuffer(),{type:'array'});
  wb.SheetNames.forEach(s=>{n+=impSheet(s,XLSX.utils.sheet_to_json(wb.Sheets[s],{header:1,defval:''}))})}catch(e){alert('File tidak bisa dibaca.')}
- inp.value='';save();render();alert(n?n+' baris data berhasil diimpor.':'Tidak ada data yang cocok. Pakai file export aplikasi ini, atau Excel Potensi Hotel / Karaoke Umum.')}
+ inp.value='';save();render();alert(n?n+' baris data berhasil diimpor ke tab '+NM[tab]+'. Nilai yang tidak ada di file memakai isian awal, silakan lengkapi lewat Ubah.':'Tidak ada data yang cocok. File harus punya kolom Nama dan Alamat atau Kecamatan di barisan judul. Pakai file export SIMPADATAKA, export aplikasi ini, atau Excel Potensi Hotel / Karaoke Umum.')}
+function bk(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:'application/json'}));a.download=file('cadangan','json');a.click()}
+async function rs(i){const f=i.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!d.hotel||!d.hib||!d.rek)throw 0;if(!confirm('Ganti semua data di perangkat ini dengan file cadangan?')){i.value='';return}S={...def(),...d};S.cfg={...def().cfg,...d.cfg};save();render()}catch(e){alert('File cadangan tidak valid.')}i.value=''}
 function tg(i){ex.has(i)?ex.delete(i):ex.add(i);render()}
 function ubah(i){editIdx=i;if(tab=='hib')hibJ=S.hib[i].j;render();scrollTo(0,0)}
-function arCard(){return tab=='rek'?'':`<details class="card"><summary><b>Okupansi otomatis</b></summary><label><input type="checkbox" id="a_on" style="width:auto" ${S.cfg.auto?'checked':''}> Isi okupansi rate otomatis di formulir</label>${tab=='hotel'?`<label>Okupansi hotel per kecamatan (%), rata-rata dari Excel Potensi Hotel</label><textarea id="a_h">${S.cfg.arH}</textarea>`:`<label>Okupansi per jenis hiburan (%), karaoke dari Excel, lainnya angka awal</label><textarea id="a_b">${S.cfg.arB}</textarea>`}<button class="btn o" onclick="saveAR()">Simpan</button></details>`}
+function arCard(){return tab=='rek'?'':`<details class="card"><summary>Pengaturan okupansi otomatis</summary><label style="margin-top:10px"><input type="checkbox" id="a_on" style="width:auto" ${S.cfg.auto?'checked':''}> Isi okupansi otomatis di formulir</label><p class="res">Dipakai rata-rata dari data tersimpan (kecamatan atau jenis yang sama). Kalau belum ada data, dipakai angka awal di bawah.</p>${tab=='hotel'?`<label>Angka awal hotel per kecamatan (%)</label><textarea id="a_h">${S.cfg.arH}</textarea>`:`<label>Angka awal per jenis hiburan (%)</label><textarea id="a_b">${S.cfg.arB}</textarea>`}<button class="btn o" onclick="saveAR()">Simpan</button></details>`}
 function render(){
  document.getElementById('nav').innerHTML=['hotel','hib','rek'].map(m=>`<button class="${m==tab?'on':''}" onclick="tab='${m}';editIdx=null;ex.clear();render()">${NM[m]}</button>`).join('');
- document.getElementById('tot').innerHTML=['hotel','hib','rek'].map(m=>`<div><span>${NM[m]} (${S[m].length})</span><b>${R(tot(m))}</b></div>`).join('')+`<div class="g"><span>Total potensi setahun</span><b>${R(tot('hotel')+tot('hib')+tot('rek'))}</b></div>`;
+ document.getElementById('tot').innerHTML=`<span>Total potensi setahun (${S.hotel.length+S.hib.length+S.rek.length} objek)</span><b>${R(tot('hotel')+tot('hib')+tot('rek'))}</b>`;
  let h='';
  if(tab=='rek'){const z=![...lst(S.cfg.jenis),...lst(S.cfg.lokasi)].some(x=>x.v>0);
-  h+=(z?`<div class="warn">Nilai NJOP dan nilai lokasi strategis masih 0. Isi dari lampiran Perbup Paser No. 41/2020 di bagian pengaturan di bawah, supaya potensi reklame terhitung.</div>`:'')+
-  `<details class="card"><summary><b>Pengaturan tarif reklame</b></summary><label>Tarif pajak (%)</label><input id="c_t" type="number" value="${S.cfg.tarif}"><label>NJOP per m2 tiap jenis (satu baris: nama = nilai)</label><textarea id="c_j">${S.cfg.jenis}</textarea><label>Nilai lokasi strategis per sisi (tanpa kelas jalan)</label><textarea id="c_l">${S.cfg.lokasi}</textarea><button class="btn o" onclick="saveCfg()">Simpan pengaturan</button><p class="res">NSR = (luas x sisi x unit x NJOP jenis + nilai lokasi x sisi x unit) x masa/12. Pajak = NSR x tarif.</p></details>`}
+  h+=(z?`<div class="warn">Nilai NJOP dan lokasi strategis masih 0. Isi dari lampiran Perbup Paser No. 41/2020 di Pengaturan tarif reklame di bawah.</div>`:'')+
+  `<details class="card"><summary>Pengaturan tarif reklame</summary><label style="margin-top:10px">Tarif pajak (%)</label><input id="c_t" type="number" value="${S.cfg.tarif}"><label>NJOP per m2 tiap jenis (satu baris: nama = nilai)</label><textarea id="c_j">${S.cfg.jenis}</textarea><label>Nilai lokasi strategis per sisi (tanpa kelas jalan)</label><textarea id="c_l">${S.cfg.lokasi}</textarea><button class="btn o" onclick="saveCfg()">Simpan pengaturan</button><p class="res">NSR = (luas x sisi x unit x NJOP jenis + nilai lokasi x sisi x unit) x masa/12. Pajak = NSR x tarif.</p></details>`}
  if(tab=='hib')h+=`<div class="card"><label>Jenis hiburan</label><select ${editIdx!=null?'disabled':''} onchange="hibJ=this.value;render()">${Object.entries(HIB).map(([k,x])=>`<option value="${k}" ${k==hibJ?'selected':''}>${x[0]}</option>`).join('')}</select></div>`;
- h+=`<div class="card"><b>${editIdx!=null?'Ubah data':'Hitung dan tambah data'} ${NM[tab].toLowerCase()}</b><div class="grid" style="margin-top:8px" oninput="chg(event)" onchange="chg(event)">${fieldsFor(tab).map(f=>inp(f,tab)).join('')}</div><button class="btn" onclick="add()">Simpan data</button>${editIdx!=null?'<button class="btn l" onclick="editIdx=null;render()">Batal ubah</button>':''}</div>`;
+ const fs=fieldsFor(tab),m=fs.filter(f=>!f.x),x=fs.filter(f=>f.x);
+ h+=`<div class="card" oninput="chg(event)" onchange="chg(event)"><b>${editIdx!=null?'Ubah data':'Tambah data'} ${NM[tab].toLowerCase()}</b><div class="grid" style="margin-top:10px">${m.map(f=>inp(f,tab)).join('')}</div>${x.length?`<details class="ex" ${editIdx!=null?'open':''}><summary>Rincian tambahan (opsional)</summary><div class="grid">${x.map(f=>inp(f,tab)).join('')}</div></details>`:''}<button class="btn" onclick="add()">Simpan data</button>${editIdx!=null?'<button class="btn l" onclick="editIdx=null;render()">Batal</button>':''}</div>`;
  const r=S[tab];h+=`<div class="card sc"><table><tr><th>Usaha (ketuk untuk detail)</th><th class="r">Potensi/tahun</th></tr>${r.length?r.map((e,i)=>{const c=calc(tab,e),o=ex.has(i);return`<tr class="k" onclick="tg(${i})"><td><b>${esc(e.v.nama)}</b><div class="res">${esc(e.v.kec)}${tab=='hib'?' · '+HIB[e.j][0]:''}${tab=='rek'?' · '+esc(e.v.jenis):''}</div></td><td class="r">${R(c.Total)}</td></tr>`+(o?`<tr class="det"><td colspan="2">${fieldsFor2(tab,e).map(f=>`${f.l}: <b>${esc(e.v[f.k])}</b>`).join(' · ')}<br><br>${Object.entries(c).map(([k,x])=>`${k}: <b>${fmt(k,x)}</b>`).join(' · ')}<br><button class="btn" onclick="event.stopPropagation();ubah(${i})">Ubah</button><button class="btn l" onclick="event.stopPropagation();del(${i})">Hapus</button></td></tr>`:'')}).join(''):'<tr><td colspan="2" class="res">Belum ada data. Isi formulir di atas atau import dari Excel.</td></tr>'}</table></div>`;
- h+=`<button class="btn o" onclick="xl(false)">Export Excel ${NM[tab]}</button><button class="btn l" onclick="csv(tab)">Export CSV</button><button class="btn" onclick="xl(true)">Export Excel semua pajak</button><label class="btn l" style="display:inline-block">Import data<input type="file" accept=".xlsx,.xls,.csv" hidden onchange="imp(this)"></label>`+arCard();
+ h+=`<button class="btn o" onclick="xl(false)">Export Excel ${NM[tab]}</button><button class="btn l" onclick="csv(tab)">Export CSV</button><button class="btn" onclick="xl(true)">Export semua pajak</button><label class="btn l" style="display:inline-block">Import SIMPADATAKA / Excel<input type="file" accept=".xlsx,.xls,.csv" hidden onchange="imp(this)"></label>`+`<br><button class="btn l" onclick="bk()">Cadangkan data</button><label class="btn l" style="display:inline-block">Pulihkan cadangan<input type="file" accept=".json" hidden onchange="rs(this)"></label>`+arCard();
  document.getElementById('view').innerHTML=h;
- if(editIdx!=null){const e=S[tab][editIdx];fieldsFor(tab).forEach(f=>{const el=document.getElementById('f_'+f.k);if(el)el.value=e.v[f.k]})}else applyAR();live()}
+ if(editIdx!=null){const e=S[tab][editIdx];fs.forEach(f=>{const el=document.getElementById('f_'+f.k);if(el)el.value=e.v[f.k]})}else applyAR();live()}
 let dp=null;const stand=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
 const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
 if(!stand){if(ios)document.getElementById('ins').style.display='block';
