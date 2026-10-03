@@ -1,5 +1,6 @@
 <!DOCTYPE html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#073b6b"><link rel="manifest" href="manifest.json"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><title>Potensi Pajak Daerah - BAPENDA Paser</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script><script src="firebase-config.js"></script>
 <style>
 :root{--navy:#073b6b;--blue:#0a6bb5;--gold:#f2c200;--bg:#f2f6fa;--ink:#16202e;--mut:#5d6b80;--line:#d5dde8}
 *{box-sizing:border-box}body{margin:0;padding-bottom:96px;font:15px/1.45 system-ui,sans-serif;background:var(--bg);color:var(--ink)}
@@ -27,14 +28,14 @@ table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:8px 6px;b
 .kmr{padding:7px 0;border-bottom:1px dashed var(--line)}
 @media(prefers-reduced-motion:no-preference){details[open]>.grid{animation:o .15s}@keyframes o{from{opacity:0}}}
 </style></head><body>
-<header><div class="br"><img src="logo.png" alt="Lambang Kabupaten Paser"><div><h1>Potensi Pajak Daerah</h1><small>BAPENDA Kabupaten Paser</small></div><button id="ins" class="btn o" style="display:none;margin:0 0 0 auto" onclick="installApp()">Install</button></div><nav id="nav"></nav></header>
+<header><div class="br"><img src="logo.png" alt="Lambang Kabupaten Paser"><div><h1>Potensi Pajak Daerah</h1><small>BAPENDA Kabupaten Paser</small><br><small id="cs" onclick="push()" style="cursor:pointer"></small></div><button id="ins" class="btn o" style="display:none;margin:0 0 0 auto" onclick="installApp()">Install</button></div><nav id="nav"></nav></header>
 <main><div class="tot" id="tot"></div><div id="view"></div></main><div class="live" id="live"></div>
 <script>
 const KEC=['Batu Engau','Batu Sopang','Kuaro','Long Ikis','Long Kali','Muara Komam','Muara Samu','Pasir Belengkong','Tanah Grogot','Tanjung Harapan','Belum diisi'];
 const N=x=>parseFloat(x)||0,R=x=>'Rp '+Math.round(x).toLocaleString('id-ID');
 const def=()=>({hotel:[],hib:[],rek:[],cfg:{auto:true,arH:'Tanah Grogot = 36\nKuaro = 70\nLong Ikis = 42\nLong Kali = 50\nBatu Sopang = 72\nLainnya = 42',arB:'Karaoke = 50\nBioskop = 50\nBiliar = 50\nPanti pijat = 50\nKetangkasan mesin = 50\nPusat kebugaran = 50\nRefleksi = 50',tarif:20,jenis:'Billboard = 0\nBaliho = 0\nPapan nama = 0\nSpanduk = 0\nVideotron = 0\nNeon box = 0',lokasi:''}});
 let S;try{S=JSON.parse(localStorage.getItem('ppd'))||def()}catch(e){S=def()}S.cfg={...def().cfg,...S.cfg};
-const save=()=>localStorage.setItem('ppd',JSON.stringify(S));
+const save=()=>{ensureIds();localStorage.setItem('ppd',JSON.stringify(S));pushSoon()};
 // field 'kunci:Label:default:x' ; x = rincian tambahan (disembunyikan). default kosong = teks
 const BASE=['nama:Nama usaha','kec:Kecamatan','alamat:Alamat::x'];
 const parse=s=>s.map(x=>{const[k,l,d,x2]=x.split(':');return{k,l,d:d??'',x:x2=='x'}});
@@ -161,6 +162,45 @@ function render(){
  h+=`<button class="btn o" onclick="xl(false)">Export Excel ${NM[tab]}</button><button class="btn l" onclick="csv(tab)">Export CSV</button><button class="btn" onclick="xl(true)">Export semua pajak</button><label class="btn l" style="display:inline-block">Import SIMPADATAKA / Excel<input type="file" accept=".xlsx,.xls,.csv" hidden onchange="imp(this)"></label>`+`<br><button class="btn l" onclick="bk()">Cadangkan data</button><label class="btn l" style="display:inline-block">Pulihkan cadangan<input type="file" accept=".json" hidden onchange="rs(this)"></label>`+arCard();
  document.getElementById('view').innerHTML=h;
  if(editIdx!=null){const e=S[tab][editIdx];fs.forEach(f=>{const el=document.getElementById('f_'+f.k);if(el)el.value=e.v[f.k]})}else{if(pf){Object.entries(pf).forEach(([k,x])=>{const el=document.getElementById('f_'+k);if(el)el.value=x});pf=null}applyAR()}live()}
+// ---- sinkron Firebase (Firestore, project sama dengan Geo Foto Lapangan) ----
+const COL_E='potensi_entries',COL_C='potensi_cfg',MODS=['hotel','hib','rek'];
+let DB=null,SY={},syncT=null,cfgSyn=localStorage.getItem('ppd_cfgsyn')||'',ready=false,firstSnap=false;
+try{SY=JSON.parse(localStorage.getItem('ppd_sync'))||{}}catch(e){}
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+function ensureIds(){MODS.forEach(m=>S[m].forEach(e=>{if(!e.id)e.id=uid()}))}
+const CST={off:'Cloud nonaktif',wait:'Menyinkron…',ok:'☁ Tersinkron',err:'⚠ Belum tersinkron (ketuk untuk coba lagi)',rules:'⚠ Aturan Firestore belum mengizinkan'};
+const setCS=k=>{const e=document.getElementById('cs');if(e)e.textContent=CST[k]||k};
+const persist=()=>{localStorage.setItem('ppd',JSON.stringify(S));localStorage.setItem('ppd_sync',JSON.stringify(SY));localStorage.setItem('ppd_cfgsyn',cfgSyn)};
+function pushSoon(){if(!DB||!ready)return;clearTimeout(syncT);setCS('wait');syncT=setTimeout(push,700)}
+async function push(){if(!DB||!ready)return;setCS('wait');try{const ops=[],cur={},ts=firebase.firestore.FieldValue.serverTimestamp();
+ MODS.forEach(m=>S[m].forEach(e=>{const j=JSON.stringify(e);cur[e.id]=1;if(SY[e.id]!==j)ops.push(['set',e.id,m,j])}));
+ Object.keys(SY).forEach(id=>{if(!cur[id])ops.push(['del',id])});
+ const cj=JSON.stringify(S.cfg);if(cj!==cfgSyn&&(cfgSyn!==''||cj!==JSON.stringify(def().cfg)))ops.push(['cfg',cj]);
+ for(let i=0;i<ops.length;i+=400){const part=ops.slice(i,i+400),b=DB.batch();
+  part.forEach(o=>{if(o[0]=='set')b.set(DB.collection(COL_E).doc(o[1]),{modul:o[2],data:o[3],t:ts});else if(o[0]=='del')b.delete(DB.collection(COL_E).doc(o[1]));else b.set(DB.collection(COL_C).doc('main'),{data:o[1],t:ts})});
+  await b.commit();part.forEach(o=>{if(o[0]=='set')SY[o[1]]=o[3];else if(o[0]=='del')delete SY[o[1]];else cfgSyn=o[1]})}
+ persist();setCS('ok')}catch(e){setCS(e&&e.code=='permission-denied'?'rules':'err')}}
+function softRender(){if(editIdx!=null&&!S[tab][editIdx])editIdx=null;const a=document.activeElement,fid=a&&a.id,vals={},man={},y=scrollY;
+ document.querySelectorAll('#view [id^="f_"]').forEach(el=>{vals[el.id]=el.value;if(el.dataset.man)man[el.id]=1});const op=document.querySelector('#view details.ex')?.open;
+ render();Object.entries(vals).forEach(([id,v])=>{const el=document.getElementById(id);if(el){el.value=v;if(man[id])el.dataset.man=1}});
+ if(op){const d=document.querySelector('#view details.ex');if(d)d.open=true}live();scrollTo(0,y);if(fid){const el=document.getElementById(fid);if(el)el.focus()}}
+function listen(){
+ DB.collection(COL_E).onSnapshot(sn=>{let ch=false;
+  sn.docChanges().forEach(c=>{const d=c.doc;
+   if(c.type=='removed'){MODS.forEach(m=>{const i=S[m].findIndex(e=>e.id==d.id);if(i>=0){S[m].splice(i,1);ch=true}});delete SY[d.id];return}
+   if(d.metadata.hasPendingWrites)return;const x=d.data(),m=x.modul;if(!S[m])return;let e;try{e=JSON.parse(x.data)}catch(_){return}
+   e.id=d.id;const j=JSON.stringify(e),i=S[m].findIndex(z=>z.id==d.id);
+   if(i<0){S[m].push(e);ch=true}else if(JSON.stringify(S[m][i])!==j){S[m][i]=e;ch=true}SY[d.id]=j});
+  if(!firstSnap&&!sn.metadata.fromCache){firstSnap=true;const ids=new Set(sn.docs.map(d=>d.id));
+   MODS.forEach(m=>{const n=S[m].length;S[m]=S[m].filter(e=>!SY[e.id]||ids.has(e.id));if(S[m].length!=n)ch=true});Object.keys(SY).forEach(id=>{if(!ids.has(id))delete SY[id]});ready=true}
+  if(ch){persist();softRender()}if(ready)pushSoon()},err=>setCS(err.code=='permission-denied'?'rules':'err'));
+ DB.collection(COL_C).doc('main').onSnapshot(d=>{if(!d.exists||d.metadata.hasPendingWrites)return;let c;try{c=JSON.parse(d.data().data)}catch(_){return}
+  const loc=JSON.stringify(S.cfg);if(cfgSyn===''&&loc!==JSON.stringify(def().cfg))return;
+  const n={...def().cfg,...c};if(JSON.stringify(n)===loc){cfgSyn=loc;persist();return}S.cfg=n;cfgSyn=JSON.stringify(S.cfg);persist();softRender()},()=>{})}
+function initFB(){ensureIds();localStorage.setItem('ppd',JSON.stringify(S));
+ if(typeof firebase==='undefined'||typeof FIREBASE_CONFIG==='undefined'||/PASTE_/.test(JSON.stringify(FIREBASE_CONFIG)))return setCS('off');
+ setCS('wait');try{firebase.initializeApp(FIREBASE_CONFIG);firebase.auth().signInAnonymously().then(()=>{DB=firebase.firestore();listen()}).catch(()=>setCS('err'))}catch(e){setCS('err')}}
+addEventListener('online',()=>pushSoon());
 let dp=null;const stand=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
 const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
 if(!stand){if(ios)document.getElementById('ins').style.display='block';
@@ -168,5 +208,5 @@ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e;docume
 window.addEventListener('appinstalled',()=>{document.getElementById('ins').style.display='none'});
 async function installApp(){if(dp){dp.prompt();await dp.userChoice;dp=null;document.getElementById('ins').style.display='none'}
  else alert(ios?'Di Safari: ketuk tombol Bagikan, lalu pilih "Tambah ke Layar Utama".':'Buka menu peramban (titik tiga), lalu pilih "Instal aplikasi" atau "Tambahkan ke layar utama". Di komputer, klik ikon instal di kolom alamat Chrome/Edge.')}
-render();if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+render();initFB();if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script></body></html>
