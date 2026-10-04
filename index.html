@@ -104,7 +104,10 @@ function applyAR(){if(!S.cfg.auto||tab=='rek')return;const v=autoVal();if(v==nul
 function chg(ev){const t=ev.target;if(AK.includes(t.id.slice(2)))t.dataset.man=1;if(t.id=='f_kec'&&tab=='hotel'){AK.forEach(k=>{const e=document.getElementById('f_'+k);if(e)delete e.dataset.man});applyAR()}live()}
 function live(){let c;try{c=calc(tab,{v:read(fieldsFor(tab)),j:hibJ})}catch(e){return}
  const d=Object.entries(c).filter(([k,x])=>k!='Total'&&Object.keys(c).length>2).map(([k,x])=>`<span>${k}: ${fmt(k,x)}</span>`).join('');
- document.getElementById('live').innerHTML=`<div class="t"><span>${tab=='rek'?'Pajak reklame per tahun':'Potensi pajak per tahun'}</span><b>${fmt('Total',c.Total)}</b></div>${d?`<div class="d">${d}</div>`:''}`}
+ let nj='';if(tab=='rek'){const jn=(document.getElementById('f_jenis')||{}).value,J=lst(S.cfg.jenis).find(x=>x.n==jn);if(J&&!(J.v>0))nj=`<div class="d" style="color:#b3261e">NJOP jenis "${esc(jn)}" masih Rp 0, jadi potensi 0. <button type="button" class="btn o" style="padding:3px 10px;margin:0" onclick="setNj()">Isi NJOP per m2</button></div>`}
+ const LV=document.getElementById('live'),H=`<div class="t"><span>${tab=='rek'?'Pajak reklame per tahun':'Potensi pajak per tahun'}</span><b>${fmt('Total',c.Total)}</b></div>${d?`<div class="d">${d}</div>`:''}${nj}`;if(LV.dataset.h!==H){LV.dataset.h=H;LV.innerHTML=H}}
+function setNj(){const jn=document.getElementById('f_jenis').value,x=prompt('NJOP per m2 untuk jenis "'+jn+'" (Rp), sesuai lampiran Perbup. Contoh: 500000');if(x===null)return;const v=N(String(x).replace(/\./g,'').replace(',','.'));if(!(v>0))return alert('Isi angka lebih dari 0.');
+ S.cfg.jenis=S.cfg.jenis.split('\n').map(l=>l.split('=')[0].trim()==jn?jn+' = '+v:l).join('\n');save();softRender()}
 // ---- import ----
 // kunci pembeda data: import ulang menimpa data yang sama, bukan menambah
 const nz=x=>String(x??'').trim().toLowerCase().replace(/\s+/g,' ');
