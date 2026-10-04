@@ -1,13 +1,10 @@
 /* KONFIGURASI FIREBASE - POTENSI PAJAK DAERAH (BAPENDA Paser)
-   Ganti 6 nilai "PASTE_..." di bawah dengan firebaseConfig dari project Firebase
-   khusus Potensi Pajak Daerah (Project settings > Your apps > Web app > Config).
-   Selama masih ada tulisan "PASTE_", sinkron cloud nonaktif dan aplikasi tetap
-   jalan normal memakai data lokal. */
+   Project: potensi-pajak-daerah */
 const FIREBASE_CONFIG = {
-  apiKey: "PASTE_API_KEY",
-  authDomain: "PASTE_PROJECT_ID.firebaseapp.com",
-  projectId: "PASTE_PROJECT_ID",
-  storageBucket: "PASTE_PROJECT_ID.firebasestorage.app",
-  messagingSenderId: "PASTE_SENDER_ID",
-  appId: "PASTE_APP_ID"
+  apiKey: "AIzaSyCJd7Hez9rc3hXoG2zm2fOLardyK8LksRg",
+  authDomain: "potensi-pajak-daerah.firebaseapp.com",
+  projectId: "potensi-pajak-daerah",
+  storageBucket: "potensi-pajak-daerah.firebasestorage.app",
+  messagingSenderId: "725724714381",
+  appId: "1:725724714381:web:ee62983665ad0414d759c4"
 };
