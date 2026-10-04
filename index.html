@@ -62,7 +62,13 @@ const fmt=(k,x)=>k.startsWith('Luas')?x.toLocaleString('id-ID'):R(x);
 function inp(f,pre){const id='f_'+f.k,L=f.l+(AK.includes(f.k)?' <span class="au">· otomatis</span>':'');
  const sel=a=>`<div><label>${L}</label><select id="${id}">${a.map(k=>`<option>${k}</option>`).join('')}</select></div>`;
  if(f.k=='kec')return sel(KEC);if(f.k=='jenis'&&pre=='rek')return sel(lst(S.cfg.jenis).map(x=>x.n));
- const t=f.d!==''?'number':'text';return`<div${f.k=='alamat'?' style="grid-column:1/-1"':''}><label>${L}</label><input id="${id}" type="${t}" inputmode="${t=='number'?'decimal':'text'}" value="${f.d}"></div>`}
+ const t=f.d!==''?'number':'text';
+ const ch=(f.k=='kls'||(f.k=='jenis'&&pre=='hotel'))?pilihan(f.k=='kls'?hibJ:'hotel'):null;
+ const chips=ch?`<div class="chips" style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px">${ch.map(x=>`<button type="button" class="btn l" style="padding:4px 10px;margin:0;font-size:13px" onclick="pilih('${id}',this.textContent)">${esc(x)}</button>`).join('')}</div>`:'';
+ return`<div${f.k=='alamat'||ch?' style="grid-column:1/-1"':''}><label>${L}</label><input id="${id}" type="${t}" inputmode="${t=='number'?'decimal':'text'}" value="${f.d}" ${ch?'placeholder="Pilih di bawah atau ketik sendiri"':''}>${chips}</div>`}
+const PIL={hotel:['Standard','Superior','Deluxe','Suite','Family','VIP'],karaoke:['VIP','Large','Medium','Small','Family','Reguler'],fitness:['Reguler','VIP','Premium','Harian','Kelas senam','Yoga'],biliar:['Reguler','VIP'],bioskop:['Reguler','Premiere','Sweetbox'],pijat:['Reguler','VIP'],refleksi:['Reguler','VIP'],tangkas:[]};
+function pilihan(j){const old=j=='hotel'?S.hotel.map(e=>e.v.jenis):S.hib.filter(e=>e.j==j).map(e=>e.v.kls);return[...new Set([...(PIL[j]||[]),...old.map(x=>String(x||'').trim()).filter(Boolean)])]}
+function pilih(id,t){const el=document.getElementById(id);if(!el)return;el.value=t;el.dispatchEvent(new Event('input',{bubbles:true}));const d=el.closest('details');if(d)d.open=true}
 const FS=(m,j)=>m=='hotel'?[...parse(BASE),...parse(MOD.hotel.f)]:m=='hib'?[...parse(BASE),...parse(HIB[j][1])]:parse(REK);
 const fieldsFor=m=>FS(m,hibJ),fieldsFor2=(m,e)=>FS(m,e.j);
 function read(fs){const v={};fs.forEach(f=>{const e=document.getElementById('f_'+f.k);v[f.k]=f.d!==''?N(e.value):e.value});return v}
