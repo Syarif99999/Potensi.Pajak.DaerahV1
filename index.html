@@ -178,6 +178,9 @@ function impOwn(sn,a){if(!a[0]||!(a[0].includes('Nama usaha')||a[0].includes('Na
   e.v={};fs.forEach(f=>e.v[f.k]=f.d!==''?N(o[f.l]):String(o[f.l]??''));if(m=='rek')e.v.jenis=pbName(e.v.jenis);upsert(m,e);c++});return c}
 const GH={nama:/nama/i,alamat:/alamat/i,kec:/kecamatan|kec\./i,jml:/jumlah\s*kamar|jml.*kamar/i,tarif:/(tarif|harga).*kamar/i,occ:/okupansi|hunian/i,jns:/jenis|kategori|klasifikasi|bidang|kegiatan/i};
 let impNote='';
+const GR={pjg:/panjang|^\s*p\s*(\(|$)/i,lbr:/lebar|^\s*l\s*(\(|$)/i,tinggi:/tinggi/i,sisi:/sisi|muka/i,masa:/\bmasa\b|jangka\s*waktu|\blama\b|durasi|periode/i,uk:/ukuran|dimensi/i,luas:/^\s*luas/i,ju:/^\s*jumlah\s*$|jumlah\s*(unit|reklame|titik|buah)|^\s*(unit|buah|qty)\s*$/i,ket:/lokasi|titik|letak|keterangan/i,tx:/teks|isi\s*reklame|nama\s*reklame/i};
+const pn=x=>{if(typeof x=='number')return x;let t=String(x??'').trim().replace(/[^0-9.,\-]/g,'');if(!t)return 0;if(t.includes(',')&&t.includes('.'))t=t.replace(/\./g,'').replace(',','.');else if(t.includes(','))t=t.replace(',','.');else if((t.match(/\./g)||[]).length>1)t=t.replace(/\./g,'');return parseFloat(t)||0};
+function ukur(x){const m=String(x??'').toLowerCase().replace(/m(eter)?\b/g,'').match(/(\d+(?:[.,]\d+)?)\s*[x×*]\s*(\d+(?:[.,]\d+)?)/);return m?[pn(m[1]),pn(m[2])]:null}
 const HK=[['refleksi',/refleksi|reflexi|reflexology|totok|terapi/],['pijat',/pijat|massage|\bspa\b|urut/],['fitness',/fitness|fitnes|kebugaran|senam|\bgym\b|yoga|pilates|zumba/],['karaoke',/karaoke|karoke|\bktv\b/],['bioskop',/bioskop|cinema|\bxxi\b|theat(er|re)/],['tangkas',/ketangkasan|arcade|timezone|game\s*(center|zone|station)|ding\s*dong|mesin\s*(game|permainan|capit)|capit/],['biliar',/biliar|billiard|bilyar|snooker/]];
 const jenisHib=(...t)=>{for(const x of t){const q=String(x||'').toLowerCase();if(!q.trim())continue;const h=HK.find(([k,r])=>r.test(q));if(h)return h[0]}return null};
 function chJ(v){if(editIdx!=null){const e=S.hib[editIdx];if(e&&e.j!=v){if(!confirm('Ganti jenis hiburan menjadi '+HIB[v][0]+'? Isian khusus jenis lama kembali ke isian awal.')){render();return}const nv={};FS('hib',v).forEach(f=>nv[f.k]=f.d!==''?N(f.d):'');['nama','kec','alamat'].forEach(k=>nv[k]=e.v[k]);e.j=v;e.v=nv;save()}}hibJ=v;render()}
@@ -185,15 +188,27 @@ function reJenis(){const ch=[];let skip=0;S.hib.forEach((e,i)=>{const d=jenisHib
  if(!ch.length)return alert(skip?skip+' data jenisnya tidak sesuai tetapi isiannya sudah diubah manual, jadi tidak dipindah otomatis. Hapus lalu input ulang dengan jenis yang benar.':'Semua jenis hiburan sudah sesuai dengan nama usahanya.');
  if(!confirm(ch.length+' data akan dipindah ke jenis hiburan yang sesuai nama usahanya (isian kembali ke isian awal jenis baru).'+(skip?' '+skip+' data lain dilewati karena isiannya sudah diubah manual.':'')+' Lanjutkan?'))return;
  ch.forEach(i=>{const e=S.hib[i],d=jenisHib(e.v.nama),v={};FS('hib',d).forEach(f=>v[f.k]=f.d!==''?N(f.d):'');['nama','kec','alamat'].forEach(k=>v[k]=e.v[k]);e.j=d;e.v=v});save();render();alert(ch.length+' data berhasil dipindah jenis hiburannya.')}
-function impGen(a){let hi=-1,mp,cnt={},miss=0;
- for(let i=0;i<Math.min(a.length,20)&&hi<0;i++){const m={};a[i].forEach((c,j)=>{const t=String(c);for(const k in GH)if(m[k]==null&&GH[k].test(t)&&!(k=='nama'&&/pemilik|npwpd|kode|petugas/i.test(t))&&!(k=='jns'&&/pajak|npwpd|kode|kamar|tarif/i.test(t)))m[k]=j});if(m.nama!=null&&(m.alamat!=null||m.kec!=null)){hi=i;mp=m}}
+let rkOk=0,rkNo=0,rkMiss=0;
+function impGen(a){let hi=-1,mp,cnt={},miss=0;rkOk=rkNo=rkMiss=0;
+ for(let i=0;i<Math.min(a.length,20)&&hi<0;i++){const m={};a[i].forEach((c,j)=>{const t=String(c);for(const k in GH)if(m[k]==null&&GH[k].test(t)&&!(k=='nama'&&/pemilik|npwpd|kode|petugas/i.test(t))&&!(k=='jns'&&/pajak|npwpd|kode|kamar|tarif/i.test(t)))m[k]=j});if(tab=='rek')a[i].forEach((c,j)=>{const t=String(c);for(const k in GR)if(m[k]==null&&GR[k].test(t)&&!(k=='ket'&&/alamat/i.test(t)))m[k]=j});if(m.nama!=null&&(m.alamat!=null||m.kec!=null)){hi=i;mp=m}}
  if(hi<0)return 0;let c=0;
  a.slice(hi+1).forEach(r=>{const nm=String(r[mp.nama]??'').trim();if(!nm)return;const v={};
   let jj=hibJ;if(tab=='hib'){const d=jenisHib(mp.jns!=null?r[mp.jns]:'',nm);if(d){jj=d;cnt[d]=(cnt[d]||0)+1}else miss++}
   FS(tab,jj).forEach(x=>v[x.k]=x.d!==''?N(x.d):'');
   v.nama=nm;v.alamat=mp.alamat!=null?String(r[mp.alamat]).trim():'';v.kec=kecM(mp.kec!=null?r[mp.kec]:v.alamat);
   if(tab=='hotel'){if(mp.jml!=null&&N(r[mp.jml])>0)v.jml=N(r[mp.jml]);if(mp.tarif!=null)v.tarif=N(r[mp.tarif]);if(mp.occ!=null&&N(r[mp.occ])>0)v.occ=pc(r[mp.occ])}
+  if(tab=='rek'){const g=k=>mp[k]!=null?r[mp[k]]:'';
+   if(mp.jns!=null&&String(r[mp.jns]).trim()){const J=pbFind(r[mp.jns]);v.jenis=J?J.n:String(r[mp.jns]).trim();if(!J)rkMiss++}
+   let u=mp.uk!=null?ukur(g('uk')):null;
+   if(mp.pjg!=null&&pn(g('pjg'))>0)v.pjg=pn(g('pjg'));if(mp.lbr!=null&&pn(g('lbr'))>0)v.lbr=pn(g('lbr'));
+   if(!(v.pjg>0&&v.lbr>0)&&u){v.pjg=u[0];v.lbr=u[1]}
+   if(!(v.pjg>0&&v.lbr>0)&&mp.luas!=null&&pn(g('luas'))>0){v.pjg=pn(g('luas'));v.lbr=1}
+   if(mp.tinggi!=null)v.tinggi=pn(g('tinggi'));if(mp.sisi!=null&&pn(g('sisi'))>0)v.sisi=pn(g('sisi'));
+   if(mp.ju!=null&&pn(g('ju'))>0)v.jml=pn(g('ju'));if(mp.ket!=null)v.ket=String(g('ket')).trim();
+   if(mp.masa!=null&&String(g('masa')).trim()){const t=String(g('masa')).toLowerCase(),n=pn(t);if(n>0){if(/hari/.test(t)){v.hr=n;v.masa=Math.round(n/30*100)/100}else if(/tahun|thn/.test(t))v.masa=n*12;else v.masa=n}}
+   if(v.pjg>0&&v.lbr>0)rkOk++;else rkNo++}
   const e={v};if(tab=='hib')e.j=jj;upsert(tab,e);c++});
+ if(tab=='rek'&&c)impNote='\n\nUkuran panjang x lebar terbaca di '+rkOk+' baris'+(rkNo?', '+rkNo+' baris belum terbaca ukurannya (cek kolom Panjang/Lebar/Ukuran di file, atau lengkapi lewat Ubah)':'')+'.'+(rkMiss?' '+rkMiss+' baris jenis reklamenya tidak dikenali, pilih jenis lewat Ubah.':'');
  if(tab=='hib'&&c)impNote='\n\nJenis hiburan dikenali otomatis dari nama/jenis usaha ('+Object.entries(cnt).map(([k,x])=>HIB[k][0]+' '+x).join(', ')+').'+(miss?' '+miss+' baris tidak dikenali dan dimasukkan sebagai '+HIB[hibJ][0]+'. Cek lewat tombol Kenali ulang jenis.':'');
  return c}
 function impSheet(sn,a){let t='';for(let i=0;i<4&&i<a.length&&!t;i++){const c=a[i].find(x=>String(x).trim());if(c!==undefined)t=String(c).toUpperCase()}
