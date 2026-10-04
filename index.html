@@ -34,7 +34,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:8px 6px;b
 <script>
 const KEC=['Batu Engau','Batu Sopang','Kuaro','Long Ikis','Long Kali','Muara Komam','Muara Samu','Pasir Belengkong','Tanah Grogot','Tanjung Harapan','Belum diisi'];
 const N=x=>parseFloat(x)||0,R=x=>'Rp '+Math.round(x).toLocaleString('id-ID');
-const def=()=>({hotel:[],hib:[],rek:[],cfg:{auto:true,arH:'Tanah Grogot = 36\nKuaro = 70\nLong Ikis = 42\nLong Kali = 50\nBatu Sopang = 72\nLainnya = 42',arB:'Karaoke = 50\nBioskop = 50\nBiliar = 50\nPanti pijat = 50\nKetangkasan mesin = 50\nPusat kebugaran = 50\nRefleksi = 50',tarif:20,jenis:'Billboard = 0\nBaliho = 0\nPapan nama = 0\nSpanduk = 0\nVideotron = 0\nNeon box = 0',lokasi:''}});
+const def=()=>({hotel:[],hib:[],rek:[],cfg:{auto:true,arH:'Tanah Grogot = 36\nKuaro = 70\nLong Ikis = 42\nLong Kali = 50\nBatu Sopang = 72\nLainnya = 42',arB:'Karaoke = 50\nBioskop = 50\nBiliar = 50\nPanti pijat = 50\nKetangkasan mesin = 50\nPusat kebugaran = 50\nRefleksi = 50',tarif:20,jenis:'Billboard = 0\nBaliho = 0\nPapan nama = 0\nSpanduk = 0\nVideotron = 0\nNeon box = 0',lokasi:'',rkh:{},kaliSisi:true}});
 let S;try{S=JSON.parse(localStorage.getItem('ppd'))||def()}catch(e){S=def()}S.cfg={...def().cfg,...S.cfg};
 const save=()=>{ensureIds();localStorage.setItem('ppd',JSON.stringify(S));pushSoon()};
 // field 'kunci:Label:default:x' ; x = rincian tambahan (disembunyikan). default kosong = teks
@@ -53,15 +53,44 @@ tangkas:['Ketangkasan mesin',['jp:Jenis permainan','t:Tarif/mesin (Rp):0','m:Rat
 fitness:['Pusat kebugaran',['jn:Jenis (fitness/senam)','kls:Kelas (reguler, VIP, dll)','a:Jumlah anggota:0','b:Biaya keanggotaan/bulan (Rp):0','bl:Jumlah bulan:12:x','tp:Tarif pajak (%):10:x'],v=>({Total:v.a*v.b*v.bl*v.tp/100})],
 refleksi:['Refleksi',['kls:Tipe layanan','jr:Jumlah room:0','tr:Tarif room (Rp):0','arr:Okupansi room (%):0','to1:Turn over room:0','jk:Jumlah kursi:0:x','tk:Tarif kursi (Rp):0:x','ark:Okupansi kursi (%):0:x','to2:Turn over kursi:0:x','h1:Hari room:365:x','h2:Hari kursi:365:x','tp:Tarif pajak (%):10:x'],v=>({Total:(v.jr*v.tr*v.arr/100*v.to1*v.h1+v.jk*v.tk*v.ark/100*v.to2*v.h2)*v.tp/100})]};
 // Reklame: NSR = NJOPR x masa/12; pajak = NSR x tarif
-const REK=['nama:Nama/penyelenggara','kec:Kecamatan','alamat:Alamat','jenis:Jenis reklame','pjg:Panjang (m):0','lbr:Lebar (m):0','tinggi:Tinggi tiang (m):0','sisi:Jumlah sisi:1','masa:Masa (bulan):12','jml:Jumlah unit:1:x','ket:Keterangan objek (titik pemasangan)::x'];
-function calcRek(v){const J=lst(S.cfg.jenis).find(x=>x.n==v.jenis),luas=v.pjg*v.lbr,
- njopr=luas*v.sisi*v.jml*(J?J.v:0),nsr=njopr*v.masa/12;
- return{'Luas (m2)':luas,NJOPR:njopr,NSR:nsr,Total:nsr*N(S.cfg.tarif)/100}}
+const REK=['nama:Nama/penyelenggara','kec:Kecamatan','alamat:Alamat','jenis:Jenis reklame','pjg:Panjang (m):0','lbr:Lebar (m):0','tinggi:Tinggi tiang (m):0','sisi:Jumlah sisi:1','masa:Masa (bulan):12','jml:Jumlah unit:1:x','hr:Jumlah hari (spanduk, suara, film):1:x','ket:Keterangan objek (titik pemasangan)::x'];
+// Tabel NJOP reklame: Perbup Paser No. 41 Tahun 2020 (perubahan Perbup No. 20 Tahun 2011), Lampiran
+// h = harga satuan [1 sisi, 2 sisi, >2 sisi] atau [harga tunggal]; per = jangka waktu dasar; area = dihitung per m2
+const PB=[
+{n:'Videotron/Megatron',per:'Tahun',sat:'m2',area:1,tarif:20,h:[2125000,2000000,2250000]},
+{n:'Baleho/Billboard/Neon Box',per:'Tahun',sat:'m2',area:1,tarif:20,h:[1200000,1250000,1375000]},
+{n:'Reklame Papan/Baleho',per:'Tahun',sat:'m2',area:1,tarif:20,h:[750000,875000,1000000]},
+{n:'Spanduk/Umbul-umbul/Banner',per:'Hari',sat:'m2',area:1,sp:1,tarif:20,h:[20000]},
+{n:'Reklame Melekat (stiker)',per:'Kali',sat:'lembar',tarif:10,h:[1750]},
+{n:'Reklame Selebaran',per:'Kali',sat:'lembar',tarif:10,h:[1000]},
+{n:'Reklame Berjalan roda 4',per:'Tahun',sat:'unit',tarif:20,h:[2500000]},
+{n:'Reklame Berjalan roda 2',per:'Tahun',sat:'unit',tarif:20,h:[500000]},
+{n:'Reklame Udara',per:'Tahun',sat:'lembar/balon',tarif:20,h:[3125000]},
+{n:'Reklame Suara',per:'Hari',sat:'spot',tarif:20,h:[937500]},
+{n:'Reklame Film/Slide',per:'Hari',sat:'film/slide',tarif:15,h:[437500]},
+{n:'Reklame Peragaan',per:'Kali',sat:'peragaan',tarif:15,h:[437500]}];
+const TIER=['1 sisi','2 sisi','lebih dari 2 sisi'];
+function pbFind(x){const q=String(x||'').toLowerCase().trim();if(!q)return null;let r=PB.find(a=>a.n.toLowerCase()==q);if(r)return r;
+ if(/videotron|megatron|led/.test(q))return PB[0];if(/papan/.test(q))return PB[2];if(/billboard|baliho|baleho|neon/.test(q))return PB[1];
+ if(/spanduk|umbul|banner/.test(q))return PB[3];if(/melekat|stiker/.test(q))return PB[4];if(/selebaran/.test(q))return PB[5];
+ if(/berjalan|kendaraan/.test(q))return /roda 2|motor|\b2\b/.test(q)?PB[7]:PB[6];if(/udara|balon/.test(q))return PB[8];if(/suara/.test(q))return PB[9];
+ if(/film|slide/.test(q))return PB[10];if(/peragaan/.test(q))return PB[11];return null}
+const pbName=x=>{const r=pbFind(x);return r?r.n:String(x||'')};
+const pbHarga=(J,t)=>{const k=J.n+'#'+t,o=(S.cfg.rkh||{})[k];return o>0?o:J.h[Math.min(t,J.h.length-1)]};
+S.rek.forEach(e=>{if(e.v)e.v.jenis=pbName(e.v.jenis)});
+function calcRek(v){const J=pbFind(v.jenis),p0=N(v.pjg),l0=N(v.lbr);
+ if(!J)return{'Luas (m2)':p0*l0,'Harga Perbup':0,NJOPR:0,NSR:0,Total:0};
+ const sisi=Math.max(1,N(v.sisi)||1),h=pbHarga(J,J.h.length>1?(sisi>=3?2:sisi==2?1:0):0);
+ let p=p0,l=l0;if(J.sp){p=p>0?Math.max(1,p):0;l=l>0?Math.max(1,l):0}
+ const luas=J.area?p*l:1,jml=N(v.jml)||1,ks=J.area&&S.cfg.kaliSisi?sisi:1,
+ per=J.per=='Tahun'?N(v.masa)/12:J.per=='Hari'?(v.hr==null||v.hr===''?1:N(v.hr)):1,
+ njopr=h*luas*ks*jml,nsr=njopr*per;
+ return{'Luas (m2)':J.area?luas:0,'Harga Perbup':h,NJOPR:njopr,NSR:nsr,Total:nsr*J.tarif/100}}
 let fk='',vw='daftar',tab='hotel',hibJ='karaoke',editIdx=null,ex=new Set(),cm='usaha',pf=null,HG=[];const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmt=(k,x)=>k.startsWith('Luas')?x.toLocaleString('id-ID'):R(x);
 function inp(f,pre){const id='f_'+f.k,L=f.l+(AK.includes(f.k)?' <span class="au">· otomatis</span>':'');
  const sel=a=>`<div><label>${L}</label><select id="${id}">${a.map(k=>`<option>${k}</option>`).join('')}</select></div>`;
- if(f.k=='kec')return sel(KEC);if(f.k=='jenis'&&pre=='rek')return sel(lst(S.cfg.jenis).map(x=>x.n));
+ if(f.k=='kec')return sel(KEC);if(f.k=='jenis'&&pre=='rek')return sel(PB.map(x=>x.n));
  const t=f.d!==''?'number':'text';
  const ch=(f.k=='kls'||(f.k=='jenis'&&pre=='hotel'))?pilihan(f.k=='kls'?hibJ:'hotel'):null;
  const chips=ch?`<div class="chips" style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px">${ch.map(x=>`<button type="button" class="btn l" style="padding:4px 10px;margin:0;font-size:13px" onclick="pilih('${id}',this.textContent)">${esc(x)}</button>`).join('')}</div>`:'';
@@ -92,7 +121,6 @@ function xl(all){const wb=XLSX.utils.book_new(),ms=all?['hotel','hib','rek']:[ta
  ms.forEach(m=>{const r=rows(m);if(r.length){any=1;XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(r),NM[m].slice(0,31))}});
  if(all){XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Jenis pajak','Jumlah objek','Potensi pajak (Rp)'],...['hotel','hib','rek'].map(m=>[NM[m],fidx(m).length,Math.round(totF(m))]),['Total','',Math.round(totF('hotel')+totF('hib')+totF('rek'))]]),'Ringkasan');any=1}
  if(!any)return alert('Belum ada data.');XLSX.writeFile(wb,file(all?'semua':tab,'xlsx'))}
-function saveCfg(){const g=i=>document.getElementById(i);S.cfg.tarif=N(g('c_t').value);S.cfg.jenis=g('c_j').value;save();render()}
 function saveAR(){const g=i=>document.getElementById(i);S.cfg.auto=g('a_on').checked;if(g('a_h'))S.cfg.arH=g('a_h').value;if(g('a_b'))S.cfg.arB=g('a_b').value;save();render()}
 // ---- okupansi otomatis: rata-rata data tersimpan (kecamatan / jenis yang sama), kalau belum ada pakai tabel awal ----
 const look=(t,n)=>{const l=lst(t),f=l.find(x=>x.n.toLowerCase()==String(n).toLowerCase())||l.find(x=>x.n.toLowerCase()=='lainnya');return f?f.v:null};
@@ -104,10 +132,8 @@ function applyAR(){if(!S.cfg.auto||tab=='rek')return;const v=autoVal();if(v==nul
 function chg(ev){const t=ev.target;if(AK.includes(t.id.slice(2)))t.dataset.man=1;if(t.id=='f_kec'&&tab=='hotel'){AK.forEach(k=>{const e=document.getElementById('f_'+k);if(e)delete e.dataset.man});applyAR()}live()}
 function live(){let c;try{c=calc(tab,{v:read(fieldsFor(tab)),j:hibJ})}catch(e){return}
  const d=Object.entries(c).filter(([k,x])=>k!='Total'&&Object.keys(c).length>2).map(([k,x])=>`<span>${k}: ${fmt(k,x)}</span>`).join('');
- let nj='';if(tab=='rek'){const jn=(document.getElementById('f_jenis')||{}).value,J=lst(S.cfg.jenis).find(x=>x.n==jn);if(J&&!(J.v>0))nj=`<div class="d" style="color:#b3261e">NJOP jenis "${esc(jn)}" masih Rp 0, jadi potensi 0. <button type="button" class="btn o" style="padding:3px 10px;margin:0" onclick="setNj()">Isi NJOP per m2</button></div>`}
+ let nj='';if(tab=='rek'){const J=pbFind((document.getElementById('f_jenis')||{}).value);if(J)nj=`<div class="d">Perbup 41/2020: ${J.area?'per m2':'per '+J.sat} per ${J.per.toLowerCase()} · tarif ${J.tarif}%${J.per=='Hari'?' · isi Jumlah hari di Rincian tambahan':''}${!J.area?' · isi Jumlah unit di Rincian tambahan':''}</div>`}
  const LV=document.getElementById('live'),H=`<div class="t"><span>${tab=='rek'?'Pajak reklame per tahun':'Potensi pajak per tahun'}</span><b>${fmt('Total',c.Total)}</b></div>${d?`<div class="d">${d}</div>`:''}${nj}`;if(LV.dataset.h!==H){LV.dataset.h=H;LV.innerHTML=H}}
-function setNj(){const jn=document.getElementById('f_jenis').value,x=prompt('NJOP per m2 untuk jenis "'+jn+'" (Rp), sesuai lampiran Perbup. Contoh: 500000');if(x===null)return;const v=N(String(x).replace(/\./g,'').replace(',','.'));if(!(v>0))return alert('Isi angka lebih dari 0.');
- S.cfg.jenis=S.cfg.jenis.split('\n').map(l=>l.split('=')[0].trim()==jn?jn+' = '+v:l).join('\n');save();softRender()}
 // ---- import ----
 // kunci pembeda data: import ulang menimpa data yang sama, bukan menambah
 const nz=x=>String(x??'').trim().toLowerCase().replace(/\s+/g,' ');
@@ -149,7 +175,7 @@ function impLay(a,j){let hr=-1,cN=0;for(let i=0;i<Math.min(a.length,15)&&hr<0;i+
 function impOwn(sn,a){if(!a[0]||!(a[0].includes('Nama usaha')||a[0].includes('Nama/penyelenggara'))||sn=='Ringkasan')return 0;const m=Object.keys(NM).find(k=>NM[k].slice(0,31)==sn)||tab;let c=0;
  a.slice(1).forEach(r=>{const o={};a[0].forEach((h,i)=>o[h]=r[i]);if(!String(o['Nama usaha']??o['Nama/penyelenggara']??'').trim())return;let e={},fs;
   if(m=='hib'){const j=Object.keys(HIB).find(k=>HIB[k][0]==o['Jenis hiburan']);if(!j)return;e.j=j;fs=FS('hib',j)}else fs=FS(m);
-  e.v={};fs.forEach(f=>e.v[f.k]=f.d!==''?N(o[f.l]):String(o[f.l]??''));upsert(m,e);c++});return c}
+  e.v={};fs.forEach(f=>e.v[f.k]=f.d!==''?N(o[f.l]):String(o[f.l]??''));if(m=='rek')e.v.jenis=pbName(e.v.jenis);upsert(m,e);c++});return c}
 const GH={nama:/nama/i,alamat:/alamat/i,kec:/kecamatan|kec\./i,jml:/jumlah\s*kamar|jml.*kamar/i,tarif:/(tarif|harga).*kamar/i,occ:/okupansi|hunian/i,jns:/jenis|kategori|klasifikasi|bidang|kegiatan/i};
 let impNote='';
 const HK=[['refleksi',/refleksi|reflexi|reflexology|totok|terapi/],['pijat',/pijat|massage|\bspa\b|urut/],['fitness',/fitness|fitnes|kebugaran|senam|\bgym\b|yoga|pilates|zumba/],['karaoke',/karaoke|karoke|\bktv\b/],['bioskop',/bioskop|cinema|\bxxi\b|theat(er|re)/],['tangkas',/ketangkasan|arcade|timezone|game\s*(center|zone|station)|ding\s*dong|mesin\s*(game|permainan|capit)|capit/],['biliar',/biliar|billiard|bilyar|snooker/]];
@@ -220,7 +246,7 @@ pijat:['<code>jumlah room/bed × tarif × okupansi% × turn over per hari × har
 tangkas:['<code>tarif per mesin × mesin dipakai per hari × okupansi% × tarif pajak% × hari</code>'],
 fitness:['<code>jumlah anggota × biaya per bulan × jumlah bulan × tarif pajak%</code>'],
 refleksi:['<code>(room × tarif × okupansi% × turn over × hari + kursi × tarif × okupansi% × turn over × hari) × tarif pajak%</code>'],
-rek:['<b>NJOPR</b> = <code>panjang × lebar × jumlah sisi × jumlah unit × NJOP jenis reklame</code>','<b>NSR</b> = <code>NJOPR × masa (bulan) ÷ 12</code>','<b>Pajak reklame</b> = <code>NSR × tarif pajak%</code>']};
+rek:['Dasar: Perbup Paser No. 41 Tahun 2020 (perubahan Perbup No. 20 Tahun 2011). Harga satuan (NJOP) tiap jenis reklame ada di tabel Lampiran.','<b>Reklame per m2</b> (videotron, billboard/neon box, papan/baleho, spanduk): <code>NJOPR = harga satuan × panjang × lebar × jumlah sisi × jumlah unit</code>. Harga satuan dibedakan menurut jumlah sisi (1, 2, lebih dari 2).','<b>Reklame per unit/lembar/spot</b> (berjalan, udara, suara, film, melekat, selebaran, peragaan): <code>NJOPR = harga satuan × jumlah</code>','<b>NSR</b> = <code>NJOPR × jangka waktu</code>. Jangka waktu: masa (bulan) ÷ 12 untuk jenis per tahun, jumlah hari untuk jenis per hari, 1 untuk jenis per kali.','<b>Pajak reklame</b> = <code>NSR × tarif pajak jenis itu</code> (20% videotron, billboard, papan, spanduk, berjalan, udara, suara; 15% film dan peragaan; 10% melekat dan selebaran).','Spanduk/umbul-umbul/banner yang ukurannya kurang dari 1 meter dihitung 1 meter (Pasal 7A ayat 4).']};
 function rumusCard(){const k=tab=='hib'?hibJ:tab,t=tab=='hib'?'Rumus potensi '+HIB[hibJ][0]:'Rumus perhitungan potensi '+NM[tab].toLowerCase();return`<details class="card" open><summary>${t}</summary><ul class="rm">${RM[k].map(x=>`<li>${x}</li>`).join('')}</ul></details>`}
 function chartData(){const m={},ad=(k,v)=>m[k]=(m[k]||0)+v;
  if(cm=='pajak')['hotel','hib','rek'].forEach(x=>ad(NM[x],totF(x)));
@@ -231,15 +257,17 @@ function chartCard(){const O={usaha:'10 usaha tertinggi',kec:'Per kecamatan',jen
 function sheetView(){if(tab=='hotel')return hotelSheet();const r=rows(tab);if(!r.length)return`<p class="res">${S[tab].length?'Tidak ada data di kecamatan ini.':'Belum ada data.'}</p>`;const h=[...new Set(r.flatMap(Object.keys))],ix=fidx(tab);
  return`<div class="sheetw"><table class="sheet"><tr><th>Aksi</th>${h.map(k=>`<th>${esc(k)}</th>`).join('')}</tr>${r.map((o,n)=>`<tr><td><button class="btn" style="margin:0 4px 0 0;padding:4px 8px;font-size:12px" onclick="ubah(${ix[n]})">Ubah</button><button class="btn l" style="margin:0;padding:4px 8px;font-size:12px;color:#b3261e;border-color:#b3261e" onclick="del(${ix[n]})">Hapus</button></td>${h.map(k=>{const x=o[k];return typeof x=='number'?`<td class="r">${x.toLocaleString('id-ID')}</td>`:`<td>${esc(x)}</td>`}).join('')}</tr>`).join('')}</table></div>`}
 function tg(i){ex.has(i)?ex.delete(i):ex.add(i);render()}
-function ubah(i){editIdx=i;if(tab=='hib')hibJ=S.hib[i].j;render();scrollTo(0,0)}
+function ubah(i){editIdx=i;if(tab=='rek')S.rek[i].v.jenis=pbName(S.rek[i].v.jenis);if(tab=='hib')hibJ=S.hib[i].j;render();scrollTo(0,0)}
+function rekCfg(){const rows=PB.map((J,ji)=>J.h.map((_,t)=>`<tr><td>${esc(J.n)}${J.h.length>1?' · '+TIER[t]:''}<div class="res">per ${J.area?'m2':J.sat} per ${J.per.toLowerCase()} · tarif ${J.tarif}%</div></td><td><input id="r_${ji}_${t}" type="number" value="${pbHarga(J,t)}" style="width:120px"></td></tr>`).join('')).join('');
+ return`<details class="card"><summary>Tabel NJOP reklame (Perbup Paser No. 41/2020)</summary><p class="res" style="margin-top:10px">Harga satuan dari Lampiran Perbup. Bisa diubah kalau ada penyesuaian, dan bisa dikembalikan ke angka Perbup.</p><table>${rows}</table><label style="margin-top:10px"><input type="checkbox" id="r_ks" style="width:auto" ${S.cfg.kaliSisi?'checked':''}> Luas dikalikan jumlah sisi</label><button class="btn o" onclick="saveRk()">Simpan</button><button class="btn l" onclick="resetRk()">Kembalikan ke angka Perbup</button></details>`}
+function saveRk(){const o={};PB.forEach((J,ji)=>J.h.forEach((b,t)=>{const v=N(document.getElementById(`r_${ji}_${t}`).value);if(v>0&&v!==b)o[J.n+'#'+t]=v}));S.cfg.rkh=o;S.cfg.kaliSisi=document.getElementById('r_ks').checked;save();render()}
+function resetRk(){if(!confirm('Kembalikan semua harga ke angka Perbup?'))return;S.cfg.rkh={};save();render()}
 function arCard(){return tab=='rek'?'':`<details class="card"><summary>Pengaturan okupansi otomatis</summary><label style="margin-top:10px"><input type="checkbox" id="a_on" style="width:auto" ${S.cfg.auto?'checked':''}> Isi okupansi otomatis di formulir</label><p class="res">Dipakai rata-rata dari data tersimpan (kecamatan atau jenis yang sama). Kalau belum ada data, dipakai angka awal di bawah.</p>${tab=='hotel'?`<label>Angka awal hotel per kecamatan (%)</label><textarea id="a_h">${S.cfg.arH}</textarea>`:`<label>Angka awal per jenis hiburan (%)</label><textarea id="a_b">${S.cfg.arB}</textarea>`}<button class="btn o" onclick="saveAR()">Simpan</button></details>`}
 function render(){
  document.getElementById('nav').innerHTML=['hotel','hib','rek'].map(m=>`<button class="${m==tab?'on':''}" onclick="tab='${m}';editIdx=null;ex.clear();cm=cm=='pajak'?'pajak':'usaha';render()">${NM[m]}</button>`).join('');
  document.getElementById('tot').innerHTML=`<span>Total potensi setahun (${S.hotel.length+S.hib.length+S.rek.length} objek)</span><b>${R(tot('hotel')+tot('hib')+tot('rek'))}</b>`;
  let h='';
- if(tab=='rek'){const z=!lst(S.cfg.jenis).some(x=>x.v>0);
-  h+=(z?`<div class="warn">Nilai NJOP tiap jenis reklame masih 0. Isi dari lampiran Perbup Paser No. 41/2020 di Pengaturan tarif reklame di bawah.</div>`:'')+
-  `<details class="card"><summary>Pengaturan tarif reklame</summary><label style="margin-top:10px">Tarif pajak (%)</label><input id="c_t" type="number" value="${S.cfg.tarif}"><label>NJOP per m2 tiap jenis (satu baris: nama = nilai)</label><textarea id="c_j">${S.cfg.jenis}</textarea><button class="btn o" onclick="saveCfg()">Simpan pengaturan</button><p class="res">NSR = luas x sisi x unit x NJOP jenis x masa/12. Pajak = NSR x tarif.</p></details>`}
+ if(tab=='rek')h+=rekCfg();
  if(tab=='hib')h+=`<div class="card"><label>Jenis hiburan</label><select onchange="chJ(this.value)">${Object.entries(HIB).map(([k,x])=>`<option value="${k}" ${k==hibJ?'selected':''}>${x[0]}</option>`).join('')}</select></div>`;
  const fs=fieldsFor(tab),m=fs.filter(f=>!f.x),x=fs.filter(f=>f.x);
  h+=`<div class="card" oninput="chg(event)" onchange="chg(event)"><b>${editIdx!=null?'Ubah data':'Tambah data'} ${NM[tab].toLowerCase()}</b><div class="grid" style="margin-top:10px">${m.map(f=>inp(f,tab)).join('')}</div>${x.length?`<details class="ex" ${editIdx!=null?'open':''}><summary>Rincian tambahan (opsional)</summary><div class="grid">${x.map(f=>inp(f,tab)).join('')}</div></details>`:''}<button class="btn" onclick="add()">Simpan data</button>${editIdx==null?`<button class="btn o" onclick="add(true)">Simpan &amp; tambah ${tab=='hib'?'tipe/kelas':tab=='rek'?'objek':'jenis kamar'} lain</button>`:''}${editIdx!=null?'<button class="btn l" onclick="editIdx=null;render()">Batal</button><button class="btn" style="background:#b3261e" onclick="del(editIdx)">Hapus data ini</button>':''}</div>`;
